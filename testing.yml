@@ -1,16 +1,33 @@
+# Environment file auto-generated from pyproject.toml
+# Do not edit manually - run: python .github/scripts/generate_environments.py
+
 name: test
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
+  # Testing environment (synced from pyproject.toml)
+  - python>=3.10
+  - click<=8.3.1
+  - cookiecutter<=2.6.0
+  - numpy>=1.24,<=2.1.0
+  - pandas>=2.0,<=2.3.3
+  - pandera<=0.27.0
+  - pexpect<=4.9.0
+  - pip
+  - pulp<=3.3.0
+  - pydantic<=2.12.5
+  - pyyaml<=6.0.3
+  - rich<=14.2.0
+  - seaborn<=0.13.2
+  - snakemake-wrapper-utils<=0.8.0
+  - snakemake>=9.12.0,<=9.14.5
+  - typer<=0.21.1
+  - wget<=3.2
   - pip
   - pytest
   - pytest-cov
   - pytest-xdist
-  - python>=3.11,<3.13
-  - pexpect
   - pip:
-      - snakemake
-      - tracknado
-      - wget
+      - tracknado>=0.3.1,<1.0.0
