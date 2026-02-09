@@ -1,3 +1,4 @@
+# Environment for --preset lc (specific bioinformatics tools for this preset)
 name: seqnado
 channels:
   - conda-forge

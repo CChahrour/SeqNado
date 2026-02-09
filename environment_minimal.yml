@@ -4,10 +4,10 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - snakemake>8,<9
-  - python>=3.11
+  - snakemake>=9.12.0,<=9.14.5
+  - python>=3.10
   - pip
   - pip:
     - tracknado
     - wget
-    - snakemake-executor-plugin-slurm
+    - snakemake-executor-plugin-slurm<=2.0.3
