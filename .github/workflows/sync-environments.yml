@@ -50,7 +50,7 @@ jobs:
           The environment files were regenerated using:
             python .github/scripts/generate_environments.py"
           
-          git push
+          git push origin HEAD:main
 
       - name: Comment on PR if changes made
         if: github.event_name == 'pull_request' && steps.changes.outputs.changed == 'true'
