@@ -63,6 +63,26 @@ def restore_jinja_expressions(text, jinja_placeholders):
     return result
 
 
+def normalize_conda_dep(dep):
+    """
+    Normalize conda dependency to have spaces before version constraints.
+    
+    Example:
+        numpy>=1.24,<=2.1.0 -> numpy >=1.24, <=2.1.0
+        click<=8.3.1 -> click <=8.3.1
+    """
+    # Add space before operators
+    for op in [">=", "<=", "==", "!=", "<", ">"]:
+        dep = dep.replace(op, f" {op}")
+    # Add space after comma in constraints
+    dep = dep.replace(",", ", ")
+    # Remove duplicate spaces
+    while "  " in dep:
+        dep = dep.replace("  ", " ")
+    return dep.strip()
+
+
+
 def update_meta_yaml(version, sha256, meta_deps_path):
     """
     Update meta.yaml with new version, SHA256, and dependencies.
@@ -90,7 +110,7 @@ def update_meta_yaml(version, sha256, meta_deps_path):
         if dep.startswith("- "):
             dep = dep[2:]
         if dep:
-            run_deps.append(dep)
+            run_deps.append(normalize_conda_dep(dep))
     
     # Load meta.yaml and handle Jinja2
     with open(meta_file) as f:
