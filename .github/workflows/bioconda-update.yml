@@ -99,54 +99,11 @@ jobs:
 
       - name: Update meta.yaml with new version and dependencies
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          SHA="${{ steps.sha.outputs.sha256 }}"
-          
           cd bioconda-recipes/recipes/seqnado
-          
-          python3 << 'EOF'
-          import re
-          
-          version = "${{ steps.version.outputs.version }}"
-          sha = "${{ steps.sha.outputs.sha256 }}"
-          
-          with open("../../../meta_deps.txt") as f:
-              conda_deps = f.read()
-          
-          with open("meta.yaml") as f:
-              content = f.read()
-          
-          # Update version
-          content = re.sub(
-              r'{%\s*set version = ".*?" %}',
-              f'{{% set version = "{version}" %}}',
-              content
-          )
-          
-          # Update sha256
-          content = re.sub(
-              r'sha256: [a-f0-9]+',
-              f'sha256: {sha}',
-              content
-          )
-          
-          # Update run dependencies (between 'run:' and next section)
-          content = re.sub(
-              r'(run:\n)(.*?)(\n  test:)',
-              f'\\1{conda_deps}\n\\3',
-              content,
-              flags=re.DOTALL
-          )
-          
-          with open("meta.yaml", "w") as f:
-              f.write(content)
-          
-          print("Updated meta.yaml:")
-          with open("meta.yaml") as f:
-              for i, line in enumerate(f, 1):
-                  if i <= 50:
-                      print(line, end="")
-          EOF
+          python3 ${{ github.workspace }}/.github/scripts/update_bioconda_recipe.py \
+            "${{ steps.version.outputs.version }}" \
+            "${{ steps.sha.outputs.sha256 }}" \
+            "${{ github.workspace }}/meta_deps.txt"
 
       - name: Create Pull Request
         env:
