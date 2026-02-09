@@ -20,10 +20,11 @@ dynamic = ["version"]
 dependencies = [
     "click<=8.3.1",
     "cookiecutter<=2.6.0",
-    "numpy<=2.3.5",
-    "pandas<=2.3.3",
+    "numpy>=1.24,<=2.1.0",
+    "pandas>=2.0,<=2.3.3",
     "pandera<=0.27.0",
     "pexpect<=4.9.0",
+    "pip",
     "pulp<=3.3.0",
     "pydantic<=2.12.5",
     "pyyaml<=6.0.3",
@@ -56,7 +57,7 @@ docs = [
 seqnado = "seqnado.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/alsmith151/seqnado"
+Homepage = "https://Milne-Group.github.io/SeqNado"
 
 [tool.setuptools_scm]
 write_to = "seqnado/_version.py"

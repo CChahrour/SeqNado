@@ -11,17 +11,17 @@ if ! command -v mamba &> /dev/null; then
 fi
 
 
-# Create a new conda environment
+# Create a new conda environment from the environment file
 echo "Creating a new conda environment..."
-mamba create -n seqnado_dev "python>=3.12" pip -y
+mamba env create -n seqnado_dev -f environment_minimal.yml
 
 # Activate the conda environment
 echo "Activating the conda environment..."
 conda activate seqnado_dev
 
-# Install the seqnado package using pip
+# Install the seqnado package using pip (editable mode for development)
 echo "Installing seqnado..."
-pip install seqnado
+pip install -e .
 
 # Deactivate the conda environment
 echo "Deactivating the conda environment..."

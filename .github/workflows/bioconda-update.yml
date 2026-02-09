@@ -45,6 +45,36 @@ jobs:
           echo "sha256=$SHA" >> $GITHUB_OUTPUT
           echo "Found SHA256: $SHA"
 
+      - name: Checkout SeqNado
+        uses: actions/checkout@v4
+
+      - name: Generate meta.yaml from pyproject.toml
+        id: pyproject
+        run: |
+          python3 << 'EOF'
+          import tomllib
+          
+          with open("pyproject.toml", "rb") as f:
+              pyproject = tomllib.load(f)
+          
+          # Extract dependencies and format for conda
+          deps = sorted(pyproject["project"]["dependencies"])
+          py_req = pyproject["project"]["requires-python"]
+          slurm_dep = pyproject["project"]["optional-dependencies"]["slurm"][0]
+          
+          # Build conda run dependencies
+          run_deps_lines = [f"    - python {py_req}"]
+          run_deps_lines.extend(f"    - {dep}" for dep in deps)
+          run_deps_lines.append(f"    - {slurm_dep}")
+          conda_run_yaml = "\n".join(run_deps_lines)
+          
+          with open("meta_deps.txt", "w") as f:
+              f.write(conda_run_yaml)
+          
+          print("Generated conda dependencies:")
+          print(conda_run_yaml)
+          EOF
+
       - name: Fork and clone bioconda-recipes
         id: fork
         env:
@@ -67,23 +97,13 @@ jobs:
           # Create new branch from HEAD
           git checkout -b update-seqnado-${{ steps.version.outputs.version }}
 
-      - name: Update meta.yaml
+      - name: Update meta.yaml with new version and dependencies
         run: |
           cd bioconda-recipes/recipes/seqnado
-          VERSION="${{ steps.version.outputs.version }}"
-          SHA="${{ steps.sha.outputs.sha256 }}"
-
-          # Update version
-          sed -i "s/{% set version = \".*\" %}/{% set version = \"${VERSION}\" %}/" meta.yaml
-
-          # Update sha256
-          sed -i "s/sha256: .*/sha256: ${SHA}/" meta.yaml
-
-          # Fix entry point (cli_pipeline -> app)
-          sed -i "s/seqnado.cli:cli_pipeline/seqnado.cli:app/g" meta.yaml
-
-          echo "Updated meta.yaml:"
-          head -30 meta.yaml
+          python3 ${{ github.workspace }}/.github/scripts/update_bioconda_recipe.py \
+            "${{ steps.version.outputs.version }}" \
+            "${{ steps.sha.outputs.sha256 }}" \
+            "${{ github.workspace }}/meta_deps.txt"
 
       - name: Create Pull Request
         env:

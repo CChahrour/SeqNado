@@ -1,13 +1,18 @@
+# Environment file auto-generated from pyproject.toml
+# Do not edit manually - run: python .github/scripts/generate_environments.py
+
 name: seqnado
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - snakemake>8,<9
-  - python>=3.11
+  # Minimal dev environment (synced from pyproject.toml)
+  - python>=3.10
+  - numpy>=1.24,<=2.1.0
+  - pandas>=2.0,<=2.3.3
+  - snakemake-wrapper-utils<=0.8.0
+  - snakemake>=9.12.0,<=9.14.5
   - pip
   - pip:
-    - tracknado
-    - wget
-    - snakemake-executor-plugin-slurm
+      - tracknado>=0.3.1,<1.0.0
