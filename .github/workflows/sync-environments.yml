@@ -45,6 +45,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          base: ${{ github.event.pull_request.base.ref || github.ref_name }}
           commit-message: |
             chore: regenerate environment files from pyproject.toml
             
