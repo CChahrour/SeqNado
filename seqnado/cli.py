@@ -135,15 +135,19 @@ def _find_fastqs(hints: List[str]) -> List[Path]:
     Skip hints that don't exist and return a sorted list.
     Searches both directly in the hint directory and in subdirectories.
     """
+    seen: set[Path] = set()
     out: List[Path] = []
     for loc in hints:
         p = Path(loc)
         if not p.exists():
             continue
-        # Search directly in the directory
-        out.extend(sorted(p.glob("*.fastq.gz")))
-        # Also search one level deeper (for fastqs/{assay}/ structure)
-        out.extend(sorted(p.glob("*/*.fastq.gz")))
+        # Search directly in the directory and one level deeper
+        for pattern in ("*.fastq.gz", "*/*.fastq.gz"):
+            for f in sorted(p.glob(pattern)):
+                resolved = f.resolve()
+                if resolved not in seen:
+                    seen.add(resolved)
+                    out.append(f)
     return out
 
 
