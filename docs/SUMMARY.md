@@ -5,6 +5,7 @@
     * [Genome Setup](genomes.md)
     * [Configuration](configuration.md)
     * [Design Guide](design.md)
+    * [GEO/SRA Download](geo_download.md)
     * [Quick Start](quick_start.md)
 * Usage
     * [Pipeline Overview](pipeline.md)

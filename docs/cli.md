@@ -33,6 +33,7 @@ $ seqnado [OPTIONS] COMMAND [ARGS]...
 * `init`: Initialize SeqNado user environment.
 * `genomes`: Manage genome configurations (list, edit, build, fastqscreen)
 * `config`: Build a workflow configuration YAML
+* `download`: Download FASTQ files from GEO/SRA
 * `design`: Generate a SeqNado design CSV from FASTQ files
 * `pipeline`: Run the data processing pipeline
 
@@ -106,6 +107,50 @@ $ seqnado config [OPTIONS] [ASSAY]
 * `-v, --verbose`: Increase logging verbosity.
 * `--interactive / --no-interactive`: Interactively prompt for config values. Non-interactive mode only works for single assay configs (except MCC and multiomics).  [default: interactive]
 * `--help`: Show this message and exit.
+
+## `seqnado download` {#cli-seqnado-download}
+
+Download FASTQ files from GEO/SRA using a metadata TSV file.
+
+**Usage**:
+
+```console
+$ seqnado download [OPTIONS] METADATA_TSV
+```
+
+**Arguments**:
+
+- **METADATA_TSV**: Path to TSV file with GEO/SRA metadata (required)
+
+**Required TSV Columns:**
+
+- `run_accession`: SRA run ID (e.g., SRR123456)
+- `sample_title`: Sample name for files
+- `library_name`: Library name
+- `library_layout`: Either "PAIRED" or "SINGLE"
+
+**Options**:
+
+* `-o, --outdir PATH`: Output directory for downloaded FASTQ files.  [default: geo_downloads]
+* `-a, --assay [rna|atac|chip|cat|snp|meth|mcc|crispr]`: Assay type for auto-generating design file after download.
+* `-d, --design-output PATH`: Path for generated design file (only with --assay).  [default: metadata_{assay}.csv]
+* `-c, --cores INTEGER`: Number of parallel download jobs.  [default: 1]
+* `--preset [lc|le|ls|ss|t]`: Snakemake execution profile preset.  [default: le]
+* `-n, --dry-run`: Show what would be run without executing downloads.
+* `-v, --verbose`: Increase logging verbosity.
+* `--help`: Show this message and exit.
+
+**Example**:
+
+```bash
+# Download paired-end RNA-seq data and generate design file
+seqnado download metadata.tsv -o geo_fastqs -a rna --cores 4
+
+# Download with SLURM preset for HPC
+seqnado download metadata.tsv --preset ss --cores 8
+```
+
+→ [Complete download guide](geo_download.md)
 
 ## `seqnado design` {#cli-seqnado-design}
 

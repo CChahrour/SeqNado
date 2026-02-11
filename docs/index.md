@@ -40,6 +40,7 @@ SeqNado includes the following advanced capabilities:
 - **Genome Browser Plots**: Generate visualizations for genome-wide data, including UCSC genome browser hubs.
 - **Quantification Methods**: Comprehensive tools for read count quantification, grouped read counts, and combined read counts.
 - **Machine Learning Dataset Creation**: Prepare datasets for machine learning applications.
+- **GEO/SRA Downloads**: Download fastq files from GEO/SRA for processing.
 
 These features are fully customizable through configuration files, making SeqNado adaptable to a variety of research needs.
 
@@ -51,8 +52,9 @@ Follow the step-by-step guide to get up and running:
 2. **[Initialisation](initialisation.md)**: Configure your local environment (CLI: [seqnado init](cli.md#cli-seqnado-init)).
 3. **[Genome Setup](genomes.md)**: Manage reference genomes and indexes (CLI: [seqnado genomes](cli.md#cli-seqnado-genomes)).
 4. **[Configuration](configuration.md)**: Define your experiment parameters (CLI: [seqnado config](cli.md#cli-seqnado-config)).
-5. **[Design Guide](design.md)**: Create your sample metadata design (CLI: [seqnado design](cli.md#cli-seqnado-design)).
-6. **[Pipeline Overview](pipeline.md)**: Run the workflow (CLI: [seqnado pipeline](cli.md#cli-seqnado-pipeline)) and explore [Outputs](outputs.md).
-7. **[Output Examples](examples.md)**: See real example outputs from test data runs.
+5. **[GEO/SRA Download](geo_download.md)**: Download FASTQ files from public repositories (CLI: [seqnado download](cli.md#cli-seqnado-download)).
+6. **[Design Guide](design.md)**: Create your sample metadata design (CLI: [seqnado design](cli.md#cli-seqnado-design)).
+7. **[Pipeline Overview](pipeline.md)**: Run the workflow (CLI: [seqnado pipeline](cli.md#cli-seqnado-pipeline)) and explore [Outputs](outputs.md).
+8. **[Output Examples](examples.md)**: See real example outputs from test data runs.
 
 For a quick end-to-end example, see the **[Quick Start](quick_start.md)** guide.

@@ -1412,7 +1412,7 @@ def download(
     metadata_tsv: Path = typer.Argument(
         ...,
         exists=True,
-        help="TSV file from GEO/ENA with columns: run_accession, sample_title, library_name",
+        help="TSV file from GEO/ENA with columns: run_accession, sample_title, library_name, and library_layout (PAIRED or SINGLE).",
     ),
     outdir: Path = typer.Option(
         Path("fastqs"),

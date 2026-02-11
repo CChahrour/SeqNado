@@ -31,6 +31,7 @@ Modular, reproducible, and container-ready pipelines powered by Snakemake that t
 ## Key Features
 
 - **Comprehensive Assay Support**: Single framework for multiple sequencing assays
+- **GEO/SRA Integration**: Download and process public datasets directly from GEO/SRA repositories
 - **Customizable Workflows**: Easily modify parameters, use different tools for peak calling, bigwig generation etc.
 - **User-Friendly CLI**: Intuitive command-line interface that guides you through setup and execution
 - **Multiomics Support**: Analyze and integrate data from multiple sequencing assays in a single workflow
@@ -144,11 +145,24 @@ YYYY-MM-DD_ATAC_project/
 
 ### 3. Add FASTQ Files
 
+**Option A: Use Your Own Data**
+
 Symlink your raw sequencing data into the project directory:
 
 ```bash
 ln -s /path/to/fastq/*.fastq.gz YYYY-MM-DD_ATAC_project/fastqs/
 ```
+
+**Option B: Download from GEO/SRA**
+
+Download public datasets directly from GEO/SRA repositories:
+
+```bash
+# Download data using a metadata TSV file
+seqnado download metadata.tsv -o YYYY-MM-DD_ATAC_project/fastqs/ -a atac --cores 4
+```
+
+→ [GEO/SRA download guide](https://Milne-Group.github.io/SeqNado/geo_download/)
 
 **Note:** Use symbolic links to avoid duplicating large files.
 

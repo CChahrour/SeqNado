@@ -121,7 +121,44 @@ You can edit the generated YAML file to customize the workflow for your specific
 
 For more details, see [seqnado config](cli.md#cli-seqnado-config).
 
-### 5. Generate experiment design
+### 5. Download fastq files from GEO/SRA
+
+The `seqnado download` command downloads FASTQ files from GEO/SRA using a metadata TSV file and optionally generates a design file for downstream analysis.
+
+#### Usage
+```bash
+seqnado download [OPTIONS] METADATA_TSV
+```
+
+#### Arguments
+- **METADATA_TSV**: Path to TSV file from GEO/ENA with run information. Must contain columns: `run_accession`, `sample_title`, `library_name`, and `library_layout`.
+
+#### Options
+- `--outdir, -o`: Output directory for downloaded FASTQ files (default: `geo_data`).
+- `--assay, -a`: Assay type for generating design file after download. If not provided, only downloads FASTQs.
+- `--design-output, -d`: Output path for design CSV (default: `metadata_{assay}.csv` in outdir).
+- `--cores, -c`: Number of parallel download jobs (default: 4).
+- `--preset`: Snakemake job profile preset for downloads (default: `le`).
+- `--dry-run, -n`: Show what would be downloaded without downloading.
+- `--verbose, -v`: Increase logging verbosity.
+
+#### Example
+Download FASTQ files and generate an RNA-seq design file:
+```bash
+seqnado download filereport_read_run_PRJNA1234567.tsv --outdir geo_data --assay rna -c 8
+```
+
+!!! info
+    The TSV file is typically downloaded from the [ENA Browser](https://www.ebi.ac.uk/ena/browser/). Required columns are:
+    
+    - `run_accession`: SRA run ID (e.g., SRR123456)
+    - `sample_title`: Sample name
+    - `library_name`: GSM identifier or library name
+    - `library_layout`: Must be `PAIRED` or `SINGLE` to correctly format output files
+
+For more details, see [GEO/SRA Download Guide](geo_download.md).
+
+### 6. Generate experiment design
 
 The `seqnado design` command generates a metadata design CSV from FASTQ files for a specific assay. If no assay is provided, the command operates in multiomics mode. The generated CSV outlines the structure of the experiment, including sample names, conditions, and other relevant metadata.
 
@@ -152,7 +189,7 @@ The generated CSV can be reviewed and edited to ensure all experimental details 
 
 For more details, see [seqnado design](cli.md#cli-seqnado-design).
 
-### 6. Run SeqNado pipeline
+### 7. Run SeqNado pipeline
 
 The `seqnado pipeline` command runs the data processing pipeline for the specified assay. It uses Snakemake under the hood to manage the workflow.
 
