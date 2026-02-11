@@ -130,6 +130,7 @@ nav:
     - Genome Setup: genomes.md
     - Configuration: configuration.md
     - Design Guide: design.md
+    - GEO/SRA Download: geo_download.md
   - Usage:
     - Pipeline Overview: pipeline.md
     - Outputs: outputs.md
