@@ -19,7 +19,7 @@ SeqNado supports the following sequencing assays:
 - **ChIP-seq**: Protein-DNA interaction analysis.
 - **CUT&Tag**: Epigenomic profiling.
 - **Methylation**: DNA methylation analysis.
-- **MCC**: Multiplex chromatin conformation capture.
+- **MCC**: Micro Capture-C.
 - **CRISPR**: CRISPR screening analysis.
 
 ## Use Cases

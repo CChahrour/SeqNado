@@ -20,6 +20,8 @@ rule samtools_faidx:
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
     log:
         OUTPUT_DIR + "/logs/index/{genome}_samtools_faidx.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/index/{genome}_samtools_faidx.tsv",
     message:
         "Indexing FASTA with samtools faidx for {wildcards.genome}"
     shell:
@@ -42,6 +44,8 @@ rule build_bowtie2:
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
     log:
         OUTPUT_DIR + "/logs/index/{genome}_bowtie2_build.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/index/{genome}_bowtie2_build.tsv",
     message:
         "Building Bowtie2 index for {wildcards.genome}"
     shell:
@@ -65,6 +69,8 @@ rule build_star:
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
     log:
         OUTPUT_DIR + "/logs/index/{genome}_star_build.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/index/{genome}_star_build.tsv",
     message:
         "Building STAR index for {wildcards.genome}"
     shell:
@@ -106,6 +112,8 @@ if SPIKEIN:
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_concat_fasta.log",
+        benchmark:
+            OUTPUT_DIR + "/.benchmark/composite/{primary}_{spikein}_concat_fasta.tsv",
         message:
             "Concatenating FASTA: {wildcards.primary} + {wildcards.spikein}"
         shell:
@@ -128,6 +136,8 @@ if SPIKEIN:
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_concat_gtf.log",
+        benchmark:
+            OUTPUT_DIR + "/.benchmark/composite/{primary}_{spikein}_concat_gtf.tsv",
         message:
             "Concatenating GTF: {wildcards.primary} + {wildcards.spikein}"
         shell:
@@ -149,6 +159,8 @@ if SPIKEIN:
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_samtools_faidx.log",
+        benchmark:
+            OUTPUT_DIR + "/.benchmark/composite/{primary}_{spikein}_samtools_faidx.tsv",
         message:
             "Indexing composite FASTA with samtools faidx for {wildcards.primary}_{wildcards.spikein}"
         shell:
@@ -171,6 +183,8 @@ if SPIKEIN:
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=8, attempts=attempt, scale=SCALE_RESOURCES),
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_bowtie2_build.log",
+        benchmark:
+            OUTPUT_DIR + "/.benchmark/composite/{primary}_{spikein}_bowtie2_build.tsv",
         message:
             "Building Bowtie2 index for composite {wildcards.primary}_{wildcards.spikein}"
         shell:
@@ -194,6 +208,8 @@ if SPIKEIN:
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_star_build.log",
+        benchmark:
+            OUTPUT_DIR + "/.benchmark/composite/{primary}_{spikein}_star_build.tsv",
         message:
             "Building STAR index for composite {wildcards.primary}_{wildcards.spikein}"
         shell:

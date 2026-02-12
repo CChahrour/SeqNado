@@ -209,6 +209,13 @@ rule create_sentinel_contact_files:
     resources:
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=8, attempts=attempt, scale=SCALE_RESOURCES),
+    log:
+        OUTPUT_DIR + "/logs/mcc/mcc_contacts_identified.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/mcc/mcc_contacts_identified.tsv",
+    message:
+        "Confirming MCC contacts have been identified",
     shell: """
         touch {output.sentinel_contacts}
+        echo "MCC contacts identified." > {log}
         """

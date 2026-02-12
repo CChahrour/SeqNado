@@ -13,6 +13,7 @@ if CONFIG.shift_for_tn5_insertion:
         threads: 1
         container: "docker://ghcr.io/alsmith151/bamnado:latest"
         log: OUTPUT_DIR + "/logs/alignment_post_process/{sample}_atac_shift.log",
+        benchmark: OUTPUT_DIR + "/.benchmark/alignment_post_process/{sample}_atac_shift_modify.tsv",
         message: "Shifting ATAC-seq alignments for sample {wildcards.sample} using bamnado",
         shell: """
         bamnado modify --input {input.bam} --output {output.tmp} --tn5-shift 2>&1 | tee {log}
@@ -30,9 +31,11 @@ if CONFIG.shift_for_tn5_insertion:
             mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
         container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
+        log: OUTPUT_DIR + "/logs/alignment_post_process/{sample}_atac_shift_sort.log",
         benchmark: OUTPUT_DIR + "/.benchmark/alignment_post_process/{sample}_atac_shift.tsv",
         message: "Sorting and indexing shifted ATAC-seq alignments for sample {wildcards.sample}",
         shell: """
+        exec &> {log}
         samtools sort {input.tmp} -@ {threads} -o {output.bam} &&
         samtools index {output.bam} &&
         echo -e "ATAC shift\t$(samtools view -c {output.bam})" > {output.read_log}

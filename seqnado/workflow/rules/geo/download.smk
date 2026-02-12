@@ -1,157 +1,181 @@
-"""
-Rules for downloading GEO/SRA data
-"""
+import os
+import re
 
-import pandas as pd
+from seqnado.workflow.helpers.geo import load_geo_samples
+from seqnado.workflow.helpers.common import (
+    define_memory_requested,
+    define_time_requested,
+)
 
-
-# Load sample metadata from TSV file
-def load_geo_samples(metadata_file):
-    """Load GEO sample metadata from TSV file"""
-    samples = pd.read_csv(metadata_file, sep="\t")
-    samples_dict = {}
-    for _, row in samples.iterrows():
-        srr = row["run_accession"]
-        sample_name = f"{row['library_name']}-{row['sample_title']}"
-        samples_dict[sample_name] = {
-            "srr": srr,
-            "gsm": row["library_name"],
-            "sample": row["sample_title"]
-        }
-    return samples_dict
+SCALE_RESOURCES = float(os.environ.get("SCALE_RESOURCES", "1"))
 
 
-# Prioritize paired rule over single rule to avoid ambiguity
-ruleorder: geo_download_paired > geo_download_single
-
-
-rule geo_download_paired:
+rule geo_prefetch:
     """
-    Download paired-end FASTQ files from GEO/SRA with retry logic
+    Download SRA data using prefetch
     """
     output:
-        r1=config["geo_outdir"] + "/{sample_name}_R1.fastq.gz",
-        r2=config["geo_outdir"] + "/{sample_name}_R2.fastq.gz"
+        sra=temp(config["geo_outdir"] + "/sra_cache/{srr}/{srr}.sra")
     params:
-        srr=lambda wildcards: config["geo_samples_paired"][wildcards.sample_name]["srr"],
-        outdir=config["geo_outdir"],
-        max_retries=5
-    threads: 8
+        outdir=config["geo_outdir"] + "/sra_cache",
     resources:
-        mem_mb=16000,
-        runtime=240  # 4 hours in minutes
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=10, attempts=attempt, scale=SCALE_RESOURCES),
+        runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
+    message:
+        "Prefetching SRA data for {wildcards.srr}"
     log:
-        "logs/geo_download/{sample_name}.log"
+        "logs/geo_prefetch/{srr}.log"
+    benchmark:
+        "logs/geo_prefetch/{srr}.benchmark.tsv"
     container:
         "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0"
     shell:
         """
         exec &> {log}
-        
-        mkdir -p {params.outdir}
-        cd {params.outdir}
-        
-        echo "Downloading paired-end data: {params.srr}"
-        
-        # Retry prefetch up to {params.max_retries} times with increasing wait
-        MAX_RETRIES={params.max_retries}
-        for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "prefetch attempt $attempt of $MAX_RETRIES"
-            prefetch {params.srr} --max-size 50G && break
-            if [ $attempt -lt $MAX_RETRIES ]; then
-                echo "prefetch failed, retrying in $((attempt * 60))s..."
-                sleep $((attempt * 60))
-            else
-                echo "prefetch failed after $MAX_RETRIES attempts"
-                exit 1
-            fi
-        done
-        
-        echo "Extracting FASTQ files"
-        fasterq-dump {params.srr} --split-files --threads {threads}
-        
-        # Rename files
-        mv {params.srr}_1.fastq {wildcards.sample_name}_R1.fastq
-        mv {params.srr}_2.fastq {wildcards.sample_name}_R2.fastq
-        
-        # Compress
-        echo "Compressing FASTQ files"
-        pigz -p {threads} {wildcards.sample_name}_R1.fastq
-        pigz -p {threads} {wildcards.sample_name}_R2.fastq
-        
-        # Remove SRA files to save space
-        rm -rf {params.srr}.sra
-        
-        echo "Done downloading {wildcards.sample_name}"
+        echo "Downloading {wildcards.srr}"
+        prefetch {wildcards.srr} --max-size 50G -O {params.outdir}
+        echo "Done prefetching {wildcards.srr}"
         """
 
 
-rule geo_download_single:
+rule geo_fastq_dump_paired:
     """
-    Download single-end FASTQ files from GEO/SRA with retry logic
+    Extract paired-end FASTQ files from prefetched SRA data
     """
+    wildcard_constraints:
+        sample_name="|".join(re.escape(s) for s in config.get("geo_samples_paired", {}).keys()),
+    input:
+        sra=lambda wc: "{outdir}/sra_cache/{srr}/{srr}.sra".format(
+            outdir=config["geo_outdir"],
+            srr=config.get("geo_samples_paired", {}).get(wc.sample_name, {}).get("srr", "INVALID"),
+        ),
     output:
-        r1=config["geo_outdir"] + "/{sample_name}.fastq.gz"
+        r1=config["geo_outdir"] + "/{sample_name}_R1.fastq",
+        r2=config["geo_outdir"] + "/{sample_name}_R2.fastq",
     params:
-        srr=lambda wildcards: config["geo_samples_single"][wildcards.sample_name]["srr"],
+        srr=lambda wc: config.get("geo_samples_paired", {}).get(wc.sample_name, {}).get("srr", ""),
         outdir=config["geo_outdir"],
-        max_retries=5
-    threads: 8
     resources:
-        mem_mb=16000,
-        runtime=240  # 4 hours in minutes
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=35, attempts=attempt, scale=SCALE_RESOURCES),
+        runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
+    message:
+        "Extracting paired-end FASTQ files for {wildcards.sample_name} ({params.srr})"
     log:
-        "logs/geo_download/{sample_name}.log"
+        "logs/geo_fastq_dump/{sample_name}.log"
+    benchmark:
+        "logs/geo_fastq_dump/{sample_name}.benchmark.tsv"
     container:
         "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0"
     shell:
         """
         exec &> {log}
-        
-        mkdir -p {params.outdir}
-        cd {params.outdir}
-        
-        echo "Downloading single-end data: {params.srr}"
-        
-        # Retry prefetch up to {params.max_retries} times with increasing wait
-        MAX_RETRIES={params.max_retries}
-        for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "prefetch attempt $attempt of $MAX_RETRIES"
-            prefetch {params.srr} --max-size 50G && break
-            if [ $attempt -lt $MAX_RETRIES ]; then
-                echo "prefetch failed, retrying in $((attempt * 60))s..."
-                sleep $((attempt * 60))
-            else
-                echo "prefetch failed after $MAX_RETRIES attempts"
-                exit 1
-            fi
-        done
-        
-        echo "Extracting FASTQ file"
-        fasterq-dump {params.srr} --threads {threads}
-        
-        # Rename file (handle both _1.fastq and .fastq outputs)
-        if [ -f {params.srr}_1.fastq ]; then
-            mv {params.srr}_1.fastq {wildcards.sample_name}.fastq
-        elif [ -f {params.srr}.fastq ]; then
-            mv {params.srr}.fastq {wildcards.sample_name}.fastq
+
+        echo "Extracting FASTQ files from {params.srr}"
+        fastq-dump {input.sra} --split-3 --skip-technical --outdir {params.outdir}
+
+        if [ -f {params.outdir}/{params.srr}_1.fastq ] && [ -f {params.outdir}/{params.srr}_2.fastq ]; then
+            echo "Found split paired-end files"
+            mv {params.outdir}/{params.srr}_1.fastq {output.r1}
+            mv {params.outdir}/{params.srr}_2.fastq {output.r2}
+            rm -f {params.outdir}/{params.srr}.fastq
+
+        elif [ -f {params.outdir}/{params.srr}.fastq ]; then
+            echo "Reads not split - sorting by coordinates and deinterleaving into R1/R2"
+
+            paste - - - - < {params.outdir}/{params.srr}.fastq \
+                | awk -F'\\t' '{{split($1, h, " "); print h[2]"\\t"$0}}' \
+                | sort -S 20G -t$'\\t' -k1,1 \
+                | cut -f2- \
+                > {params.outdir}/{params.srr}.sorted.fastq
+
+            awk -F'\\t' 'NR%2==1 {{print $1"\\n"$2"\\n"$3"\\n"$4}}' \
+                {params.outdir}/{params.srr}.sorted.fastq > {output.r1}
+            awk -F'\\t' 'NR%2==0 {{print $1"\\n"$2"\\n"$3"\\n"$4}}' \
+                {params.outdir}/{params.srr}.sorted.fastq > {output.r2}
+
+            rm -f {params.outdir}/{params.srr}.fastq {params.outdir}/{params.srr}.sorted.fastq
+
+        else
+            echo "ERROR: No FASTQ files produced for {params.srr}"
+            ls -la {params.outdir}/{params.srr}*.fastq* 2>/dev/null || echo "No fastq files found"
+            exit 1
         fi
-        
-        # Compress
-        echo "Compressing FASTQ file"
-        pigz -p {threads} {wildcards.sample_name}.fastq
-        
-        # Remove SRA files to save space
-        rm -rf {params.srr}.sra
-        
-        echo "Done downloading {wildcards.sample_name}"
+
+        echo "Done extracting {wildcards.sample_name}"
         """
 
+
+rule geo_fastq_dump_single:
+    """
+    Extract single-end FASTQ files from prefetched SRA data
+    """
+    wildcard_constraints:
+        sample_name="|".join(re.escape(s) for s in config.get("geo_samples_single", {}).keys()),
+    input:
+        sra=lambda wc: "{outdir}/sra_cache/{srr}/{srr}.sra".format(
+            outdir=config["geo_outdir"],
+            srr=config.get("geo_samples_single", {}).get(wc.sample_name, {}).get("srr", "INVALID"),
+        ),
+    output:
+        r1=config["geo_outdir"] + "/{sample_name}.fastq",
+    params:
+        srr=lambda wc: config.get("geo_samples_single", {}).get(wc.sample_name, {}).get("srr", ""),
+        outdir=config["geo_outdir"],
+    resources:
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=35, attempts=attempt, scale=SCALE_RESOURCES),
+        runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
+    message:
+        "Extracting single-end FASTQ files for {wildcards.sample_name} ({params.srr})"
+    log:
+        "logs/geo_fastq_dump/{sample_name}.log"
+    benchmark:
+        "logs/geo_fastq_dump/{sample_name}.benchmark.tsv"
+    container:
+        "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0"
+    shell:
+        """
+        exec &> {log}
+
+        echo "Extracting FASTQ files from {params.srr}"
+        fastq-dump {input.sra} --skip-technical --outdir {params.outdir}
+
+        echo "Renaming file"
+        mv {params.outdir}/{params.srr}.fastq {output.r1}
+
+        echo "Done extracting {wildcards.sample_name}"
+        """
+
+rule compress_fastq_files:
+    input:
+        config["geo_outdir"] + "/{filename}.fastq"
+    output:
+        config["geo_outdir"] + "/{filename}.fastq.gz"
+    threads: 4
+    resources:
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
+        runtime=lambda wildcards, attempt: define_time_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
+    message:
+        "Compressing {wildcards.filename}.fastq"
+    log:
+        "logs/geo_compress/{filename}.log"
+    benchmark:
+        "logs/geo_compress/{filename}.benchmark.tsv"
+    shell:
+        """
+        exec &> {log}
+        if command -v pigz >/dev/null 2>&1; then
+            pigz -p {threads} {input}
+        else
+            gzip -f {input}
+        fi
+        """
 
 rule geo_download_all:
     """
     Download all GEO samples specified in metadata file
     """
+    message:
+        "Downloading all GEO samples"
     input:
         paired=lambda wildcards: expand(
             "{outdir}/{sample}_R1.fastq.gz",
@@ -169,4 +193,14 @@ rule geo_download_all:
         )
     output:
         touch("logs/geo_download_complete.txt")
+    log:
+        "logs/geo_download_all.log"
+    benchmark:
+        "logs/geo_download_all.benchmark.tsv"
+    shell:
+        """
+        touch {output}
+        echo "GEO download complete." > {log}
+        """
 
+ruleorder: geo_fastq_dump_paired > geo_fastq_dump_single

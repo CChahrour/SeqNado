@@ -176,6 +176,9 @@ rule frip_enrichment:
     params:
         options=lambda wc: format_frip_enrichment_options(wc, CommandLineArguments(), INPUT_FILES=INPUT_FILES),
     threads: 16
+    log: OUTPUT_DIR + "/logs/frip_enrichment/{directory}/{sample}.log",
+    benchmark: OUTPUT_DIR + "/.benchmark/frip_enrichment/{directory}/{sample}.tsv",
+    message: "Running FRiP enrichment for sample {wildcards.sample}",
     shell:
         """
         plotEnrichment -p {threads} \

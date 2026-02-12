@@ -60,7 +60,12 @@ rule confirm_peaks_generated:
         touch(OUTPUT_DIR + "/peaks/mcc/.mcc_peaks_called.txt"),
     message:
         "Confirming MCC peaks have been called for all groups and viewpoint groups"
+    log:
+        OUTPUT_DIR + "/logs/mcc/mcc_peaks_called.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/mcc/mcc_peaks_called.tsv",
     shell:
         """
         echo "MCC peak calling completed successfully." > {output}
+        echo "MCC peak calling completed successfully." > {log}
         """

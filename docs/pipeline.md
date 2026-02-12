@@ -69,7 +69,7 @@ Bisulfite sequencing and methylation calling.
 - **Methylation Calls**: Generates cytosine methylation metrics and summaries.
 
 ### MCC (MCC)
-Multiplex chromatin conformation capture.
+Micro Capture-C
 
 - **Processing**: Contact map-oriented post-processing.
 - **Analysis**: MCC-specific peak/enrichment outputs and QC metrics.

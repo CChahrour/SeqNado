@@ -41,92 +41,201 @@ def download_rules_file():
     return Path(__file__).parent.parent.parent / "seqnado" / "workflow" / "rules" / "geo" / "download.smk"
 
 
+@pytest.fixture
+def rules_content(download_rules_file):
+    """Return the content of download.smk."""
+    return download_rules_file.read_text()
+
+
+def _get_rule_section(content, rule_name):
+    """Extract a rule's section from the smk file content."""
+    lines = content.split("\n")
+    section = []
+    capture = False
+    for line in lines:
+        if f"rule {rule_name}:" in line:
+            capture = True
+        elif capture and (line.startswith("rule ") or line.startswith("ruleorder:")):
+            break
+        elif capture:
+            section.append(line)
+    return "\n".join(section)
+
+
 def test_download_rules_file_exists(download_rules_file):
     """Test that the download.smk rules file exists."""
     assert download_rules_file.exists(), f"Rules file not found: {download_rules_file}"
 
 
-def test_download_rules_has_paired_rule(download_rules_file):
-    """Test that download.smk contains the geo_download_paired rule."""
-    content = download_rules_file.read_text()
-    assert "rule geo_download_paired:" in content
-    assert "geo_samples_paired" in content
+# --- Rule existence tests ---
 
 
-def test_download_rules_has_single_rule(download_rules_file):
-    """Test that download.smk contains the geo_download_single rule."""
-    content = download_rules_file.read_text()
-    assert "rule geo_download_single:" in content
-    assert "geo_samples_single" in content
+def test_has_prefetch_rule(rules_content):
+    """Test that download.smk contains the geo_prefetch rule."""
+    assert "rule geo_prefetch:" in rules_content
 
 
-def test_download_rules_has_all_rule(download_rules_file):
+def test_has_paired_rule(rules_content):
+    """Test that download.smk contains the geo_fastq_dump_paired rule."""
+    assert "rule geo_fastq_dump_paired:" in rules_content
+    assert "geo_samples_paired" in rules_content
+
+
+def test_has_single_rule(rules_content):
+    """Test that download.smk contains the geo_fastq_dump_single rule."""
+    assert "rule geo_fastq_dump_single:" in rules_content
+    assert "geo_samples_single" in rules_content
+
+
+def test_has_compress_rule(rules_content):
+    """Test that download.smk contains the compress_fastq_files rule."""
+    assert "rule compress_fastq_files:" in rules_content
+
+
+def test_has_download_all_rule(rules_content):
     """Test that download.smk contains the geo_download_all rule."""
-    content = download_rules_file.read_text()
-    assert "rule geo_download_all:" in content
+    assert "rule geo_download_all:" in rules_content
 
 
-def test_paired_rule_output_structure(download_rules_file):
-    """Test that paired-end rule has correct output structure."""
-    content = download_rules_file.read_text()
-
-    # Paired rule should output both R1 and R2
-    assert "_R1.fastq.gz" in content
-    assert "_R2.fastq.gz" in content
+# --- Prefetch rule tests ---
 
 
-def test_single_rule_output_structure(download_rules_file):
-    """Test that single-end rule has correct output structure."""
-    content = download_rules_file.read_text()
-
-    # Single rule should NOT create empty R2 files
-    # Check that single rule exists and has single output
-    lines = content.split("\n")
-    in_single_rule = False
-    single_rule_section = []
-
-    for line in lines:
-        if "rule geo_download_single:" in line:
-            in_single_rule = True
-        elif in_single_rule:
-            if line.startswith("rule "):
-                break
-            single_rule_section.append(line)
-
-    single_rule_text = "\n".join(single_rule_section)
-
-    # Should have output but NOT create empty R2
-    assert "output:" in single_rule_text
-    assert "touch" not in single_rule_text or "_R2" not in single_rule_text
+def test_prefetch_uses_temp_output(rules_content):
+    """Test that prefetch output is marked as temp for auto-cleanup."""
+    section = _get_rule_section(rules_content, "geo_prefetch")
+    assert "temp(" in section
+    assert "sra_cache" in section
 
 
-def test_rules_use_container(download_rules_file):
-    """Test that rules specify an Apptainer/Singularity container."""
-    content = download_rules_file.read_text()
-    assert "container:" in content
-    assert "sra-tools" in content
+def test_prefetch_max_size(rules_content):
+    """Test that prefetch specifies maximum download size."""
+    section = _get_rule_section(rules_content, "geo_prefetch")
+    assert "prefetch" in section
+    assert "--max-size" in section
+    assert "50G" in section or "100G" in section
 
 
-def test_rules_have_retry_logic(download_rules_file):
-    """Test that rules include retry logic for downloads."""
-    content = download_rules_file.read_text()
-    assert "max_retries" in content
-    assert "prefetch" in content
-    assert "attempt" in content
+def test_prefetch_uses_container(rules_content):
+    """Test that prefetch uses sra-tools container."""
+    section = _get_rule_section(rules_content, "geo_prefetch")
+    assert "container:" in section
+    assert "sra-tools" in section
 
 
-def test_rules_use_pigz(download_rules_file):
-    """Test that rules use pigz for parallel compression."""
-    content = download_rules_file.read_text()
-    assert "pigz" in content
+# --- Paired rule tests ---
 
 
-def test_rules_cleanup_sra_files(download_rules_file):
-    """Test that rules clean up SRA files after extraction."""
-    content = download_rules_file.read_text()
-    assert "rm -rf" in content and ".sra" in content
+def test_paired_rule_outputs_r1_r2(rules_content):
+    """Test that paired rule outputs R1 and R2 fastq files."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
+    assert "_R1.fastq" in section
+    assert "_R2.fastq" in section
 
 
+def test_paired_rule_uses_split_3(rules_content):
+    """Test that paired rule uses fastq-dump --split-3."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
+    assert "fastq-dump" in section
+    assert "--split-3" in section
+
+
+def test_paired_rule_has_sort_fallback(rules_content):
+    """Test that paired rule handles unsplit reads via sort and deinterleave."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
+    assert "sort" in section
+    assert "sorted" in section
+
+
+def test_paired_rule_has_wildcard_constraints(rules_content):
+    """Test that paired rule constrains sample_name wildcard."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
+    assert "wildcard_constraints:" in section
+    assert "geo_samples_paired" in section
+
+
+def test_paired_rule_uses_container(rules_content):
+    """Test that paired rule uses sra-tools container."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
+    assert "container:" in section
+    assert "sra-tools" in section
+
+
+# --- Single rule tests ---
+
+
+def test_single_rule_output_structure(rules_content):
+    """Test that single-end rule has single output without R1/R2."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_single")
+    assert "output:" in section
+    assert "_R1" not in section
+    assert "_R2" not in section
+
+
+def test_single_rule_has_wildcard_constraints(rules_content):
+    """Test that single rule constrains sample_name wildcard."""
+    section = _get_rule_section(rules_content, "geo_fastq_dump_single")
+    assert "wildcard_constraints:" in section
+    assert "geo_samples_single" in section
+
+
+# --- Compress rule tests ---
+def test_compress_uses_pigz(rules_content):
+    """Test that compress rule uses pigz for parallel compression."""
+    section = _get_rule_section(rules_content, "compress_fastq_files")
+    assert "pigz" in section
+
+
+def test_compress_uses_threads(rules_content):
+    """Test that compress rule uses multiple threads."""
+    section = _get_rule_section(rules_content, "compress_fastq_files")
+    assert "threads:" in section
+
+
+def test_compress_input_output_pattern(rules_content):
+    """Test that compress rule converts .fastq to .fastq.gz."""
+    section = _get_rule_section(rules_content, "compress_fastq_files")
+    assert ".fastq.gz" in section
+    assert "{filename}" in section
+
+
+# --- Download all rule tests ---
+
+
+def test_download_all_requests_gz_files(rules_content):
+    """Test that download_all expects compressed outputs."""
+    section = _get_rule_section(rules_content, "geo_download_all")
+    assert "_R1.fastq.gz" in section
+    assert "_R2.fastq.gz" in section
+    assert ".fastq.gz" in section
+
+
+# --- General rule tests ---
+def test_rules_have_logging(rules_content):
+    """Test that rules specify log files."""
+    assert "log:" in rules_content
+    assert "logs/geo_prefetch" in rules_content
+    assert "logs/geo_fastq_dump" in rules_content
+    assert "logs/geo_compress" in rules_content
+
+
+def test_rules_have_messages(rules_content):
+    """Test that rules have message directives."""
+    assert "message:" in rules_content
+
+
+def test_ruleorder_exists(rules_content):
+    """Test that ruleorder is defined for paired vs single."""
+    assert "ruleorder: geo_fastq_dump_paired > geo_fastq_dump_single" in rules_content
+
+
+@pytest.mark.unit
+def test_no_empty_placeholder_files(rules_content):
+    """Test that rules do NOT create empty R2 placeholder files."""
+    assert "touch {wildcards.sample_name}_R2.fastq.gz" not in rules_content
+    assert "touch {params.outdir}/{wildcards.sample_name}_R2.fastq.gz" not in rules_content
+
+
+# --- Config structure tests ---
 def test_config_structure_paired(mock_geo_config):
     """Test that paired samples config has correct structure."""
     paired = mock_geo_config["geo_samples_paired"]
@@ -177,69 +286,13 @@ def test_config_yaml_serializable(mock_geo_config, tmp_path):
 
     assert config_file.exists()
 
-    # Read it back and verify structure
     with open(config_file) as f:
         loaded = yaml.safe_load(f)
 
     assert loaded == mock_geo_config
 
 
-def test_paired_rule_resources(download_rules_file):
+def test_rules_have_resources(rules_content):
     """Test that rules specify appropriate resources."""
-    content = download_rules_file.read_text()
-
-    # Should specify threads, memory, and runtime
-    assert "threads:" in content
-    assert "mem_mb" in content or "mem" in content
-    assert "runtime" in content or "time" in content
-
-
-def test_rules_have_logging(download_rules_file):
-    """Test that rules specify log files."""
-    content = download_rules_file.read_text()
-    assert "log:" in content
-    assert "logs/geo_download" in content
-
-
-@pytest.mark.unit
-def test_no_empty_placeholder_files(download_rules_file):
-    """Test that rules do NOT create empty R2 placeholder files."""
-    content = download_rules_file.read_text()
-
-    # Should NOT have any logic that creates empty R2 files
-    # This was the bad pattern we removed
-    assert "touch {wildcards.sample_name}_R2.fastq.gz" not in content
-    assert "touch {params.outdir}/{wildcards.sample_name}_R2.fastq.gz" not in content
-
-
-def test_fasterq_dump_options(download_rules_file):
-    """Test that fasterq-dump is called with appropriate options."""
-    content = download_rules_file.read_text()
-
-    assert "fasterq-dump" in content
-
-    # Paired should use --split-files
-    lines = content.split("\n")
-    paired_section = []
-    capture = False
-
-    for line in lines:
-        if "rule geo_download_paired:" in line:
-            capture = True
-        elif capture and line.startswith("rule "):
-            break
-        elif capture:
-            paired_section.append(line)
-
-    paired_text = "\n".join(paired_section)
-    assert "--split-files" in paired_text
-    assert "fasterq-dump" in paired_text
-
-
-def test_prefetch_max_size(download_rules_file):
-    """Test that prefetch specifies maximum download size."""
-    content = download_rules_file.read_text()
-    assert "prefetch" in content
-    assert "--max-size" in content
-    # Should allow large files (50G or more)
-    assert "50G" in content or "100G" in content
+    assert "mem" in rules_content
+    assert "runtime" in rules_content

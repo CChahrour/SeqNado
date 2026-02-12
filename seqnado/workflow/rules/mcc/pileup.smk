@@ -127,3 +127,12 @@ rule confirm_bigwigs_generated:
         touch(OUTPUT_DIR + "/bigwigs/mcc/.mcc_bigwigs_generated.txt"),
     message:
         "Confirming all MCC bigWigs have been generated"
+    log:
+        OUTPUT_DIR + "/logs/mcc/mcc_bigwigs_generated.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/mcc/mcc_bigwigs_generated.tsv",
+    shell:
+        """
+        touch {output}
+        echo "MCC bigWigs generated." > {log}
+        """

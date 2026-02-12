@@ -10,6 +10,10 @@ rule multiomics_summary:
         OUTPUT_DIR + "multiomics_summary.txt"
     message:
         "Generating multiomics summary report"
+    log:
+        OUTPUT_DIR + "/logs/multiomics/multiomics_summary.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/multiomics/multiomics_summary.tsv",
     run:
         with open(output[0], 'w') as f:
             f.write("SeqNado Multiomics Project Summary\n")
@@ -33,4 +37,6 @@ rule multiomics_summary:
                     f.write(f"  STATUS:   COMPLETE\n")
                 else:
                     f.write(f"  WARNING: SeqNado report not found! Check logs for errors.\n")
+        with open(log[0], 'w') as log_handle:
+            log_handle.write("Multiomics summary generated.\n")
         

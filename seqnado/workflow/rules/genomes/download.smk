@@ -19,6 +19,8 @@ rule download_fasta:
     retries: 2
     log:
         OUTPUT_DIR + "/logs/download/{genome}_fasta.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/download/{genome}_fasta.tsv",
     message:
         "Downloading FASTA for {wildcards.genome} from UCSC"
     shell:
@@ -40,6 +42,8 @@ rule download_chrom_sizes:
     retries: 2
     log:
         OUTPUT_DIR + "/logs/download/{genome}_chrom_sizes.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/download/{genome}_chrom_sizes.tsv",
     message:
         "Downloading chromosome sizes for {wildcards.genome} from UCSC"
     shell:
@@ -61,6 +65,8 @@ rule download_gtf:
     retries: 2
     log:
         OUTPUT_DIR + "/logs/download/{genome}_gtf.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/download/{genome}_gtf.tsv",
     message:
         "Downloading GTF for {wildcards.genome} from UCSC"
     shell:
@@ -82,6 +88,8 @@ rule download_blacklist:
     retries: 2
     log:
         OUTPUT_DIR + "/logs/download/{genome}_blacklist.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/download/{genome}_blacklist.tsv",
     message:
         "Downloading blacklist for {wildcards.genome}"
     shell:

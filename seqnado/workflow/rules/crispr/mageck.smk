@@ -7,6 +7,8 @@ rule create_mageck_design_matrix:
         design_column="deseq2",
     log:
         OUTPUT_DIR + "/logs/readcounts/mageck/create_design_matrix.log",
+    benchmark:
+        OUTPUT_DIR + "/.benchmark/readcounts/mageck/create_design_matrix.tsv",
     message:
         "Creating MAGeCK design matrix from metadata",
     script:

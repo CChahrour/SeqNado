@@ -3,6 +3,24 @@
 from pathlib import Path
 from typing import Any, List
 
+import pandas as pd
+
+
+# Load sample metadata from TSV file
+def load_geo_samples(metadata_file):
+    """Load GEO sample metadata from TSV file"""
+    samples = pd.read_csv(metadata_file, sep="\t")
+    samples_dict = {}
+    for _, row in samples.iterrows():
+        srr = row["run_accession"]
+        sample_name = f"{row['library_name']}-{row['sample_title']}"
+        samples_dict[sample_name] = {
+            "srr": srr,
+            "gsm": row["library_name"],
+            "sample": row["sample_title"],
+        }
+    return samples_dict
+
 
 def get_files_for_symlink(OUTPUT, OUTPUT_DIR, wc: Any = None) -> List[str]:
     """
