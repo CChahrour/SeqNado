@@ -8,7 +8,7 @@ from seqnado.workflow.helpers.common import (
 )
 
 SCALE_RESOURCES = float(os.environ.get("SCALE_RESOURCES", "1"))
-OUT_DIR = "seqnado_output""
+OUT_DIR = "seqnado_output"
 
 rule geo_prefetch:
     """
@@ -24,9 +24,9 @@ rule geo_prefetch:
     message:
         "Prefetching SRA data for {wildcards.srr}"
     log:
-        f"{OUT_DIR}/logs/geo_download/geo_prefetch/{srr}.log"
+        f"{OUT_DIR}/logs/geo_download/geo_prefetch/{{srr}}.log"
     benchmark:
-        f"{OUT_DIR}/.benchmark/geo_prefetch/{srr}.benchmark.tsv"
+        f"{OUT_DIR}/.benchmark/geo_prefetch/{{srr}}.benchmark.tsv"
     container:
         "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0"
     shell:
@@ -61,9 +61,9 @@ rule geo_fastq_dump_paired:
     message:
         "Extracting paired-end FASTQ files for {wildcards.sample_name} ({params.srr})"
     log:
-        f"{OUT_DIR}/logs/geo_download/geo_fastq_dump/{sample_name}.log"
+        f"{OUT_DIR}/logs/geo_download/geo_fastq_dump/{{sample_name}}.log"
     benchmark:
-        f"{OUT_DIR}/.benchmark/geo_fastq_dump/{sample_name}.benchmark.tsv"
+        f"{OUT_DIR}/.benchmark/geo_fastq_dump/{{sample_name}}.benchmark.tsv"
     container:
         "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0"
     shell:
@@ -127,9 +127,9 @@ rule geo_fastq_dump_single:
     message:
         "Extracting single-end FASTQ files for {wildcards.sample_name} ({params.srr})"
     log:
-        f"{OUT_DIR}/logs/geo_download/geo_fastq_dump/{sample_name}.log"
+        f"{OUT_DIR}/logs/geo_download/geo_fastq_dump/{{sample_name}}.log"
     benchmark:
-        f"{OUT_DIR}/.benchmark/geo_fastq_dump/{sample_name}.benchmark.tsv"
+        f"{OUT_DIR}/.benchmark/geo_fastq_dump/{{sample_name}}.benchmark.tsv"
     container:
         "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0"
     shell:
@@ -157,9 +157,9 @@ rule compress_fastq_files:
     message:
         "Compressing {wildcards.filename}.fastq"
     log:
-        f"{OUT_DIR}/logs/geo_download/geo_compress/{filename}.log"
+        f"{OUT_DIR}/logs/geo_download/geo_compress/{{filename}}.log"
     benchmark:
-        f"{OUT_DIR}/.benchmark/geo_compress/{filename}.benchmark.tsv"
+        f"{OUT_DIR}/.benchmark/geo_compress/{{filename}}.benchmark.tsv"
     shell:
         """
         exec &> {log}
