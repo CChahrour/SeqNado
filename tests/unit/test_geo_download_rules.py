@@ -133,17 +133,10 @@ def test_paired_rule_outputs_r1_r2(rules_content):
 
 
 def test_paired_rule_uses_split_3(rules_content):
-    """Test that paired rule uses fastq-dump --split-3."""
+    """Test that paired rule uses fasterq-dump --split-3."""
     section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
-    assert "fastq-dump" in section
+    assert "fasterq-dump" in section
     assert "--split-3" in section
-
-
-def test_paired_rule_has_sort_fallback(rules_content):
-    """Test that paired rule handles unsplit reads via sort and deinterleave."""
-    section = _get_rule_section(rules_content, "geo_fastq_dump_paired")
-    assert "sort" in section
-    assert "sorted" in section
 
 
 def test_paired_rule_has_wildcard_constraints(rules_content):

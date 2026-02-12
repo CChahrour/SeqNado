@@ -55,6 +55,7 @@ rule geo_fastq_dump_paired:
     params:
         srr=lambda wc: config.get("geo_samples_paired", {}).get(wc.sample_name, {}).get("srr", ""),
         outdir=config["geo_outdir"],
+    threads: 8
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=35, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
@@ -71,35 +72,12 @@ rule geo_fastq_dump_paired:
         exec &> {log}
 
         echo "Extracting FASTQ files from {params.srr}"
-        fastq-dump {input.sra} --split-3 --skip-technical --outdir {params.outdir}
+        fasterq-dump {input.sra} --split-3 --skip-technical --outdir {params.outdir} -e {threads}
 
-        if [ -f {params.outdir}/{params.srr}_1.fastq ] && [ -f {params.outdir}/{params.srr}_2.fastq ]; then
-            echo "Found split paired-end files"
-            mv {params.outdir}/{params.srr}_1.fastq {output.r1}
-            mv {params.outdir}/{params.srr}_2.fastq {output.r2}
-            rm -f {params.outdir}/{params.srr}.fastq
-
-        elif [ -f {params.outdir}/{params.srr}.fastq ]; then
-            echo "Reads not split - sorting by coordinates and deinterleaving into R1/R2"
-
-            paste - - - - < {params.outdir}/{params.srr}.fastq \
-                | awk -F'\\t' '{{split($1, h, " "); print h[2]"\\t"$0}}' \
-                | sort -S 20G -t$'\\t' -k1,1 \
-                | cut -f2- \
-                > {params.outdir}/{params.srr}.sorted.fastq
-
-            awk -F'\\t' 'NR%2==1 {{print $1"\\n"$2"\\n"$3"\\n"$4}}' \
-                {params.outdir}/{params.srr}.sorted.fastq > {output.r1}
-            awk -F'\\t' 'NR%2==0 {{print $1"\\n"$2"\\n"$3"\\n"$4}}' \
-                {params.outdir}/{params.srr}.sorted.fastq > {output.r2}
-
-            rm -f {params.outdir}/{params.srr}.fastq {params.outdir}/{params.srr}.sorted.fastq
-
-        else
-            echo "ERROR: No FASTQ files produced for {params.srr}"
-            ls -la {params.outdir}/{params.srr}*.fastq* 2>/dev/null || echo "No fastq files found"
-            exit 1
-        fi
+        echo "Found split paired-end files"
+        mv {params.outdir}/{params.srr}_1.fastq {output.r1}
+        mv {params.outdir}/{params.srr}_2.fastq {output.r2}
+        rm -f {params.outdir}/{params.srr}.fastq
 
         echo "Done extracting {wildcards.sample_name}"
         """
@@ -121,6 +99,7 @@ rule geo_fastq_dump_single:
     params:
         srr=lambda wc: config.get("geo_samples_single", {}).get(wc.sample_name, {}).get("srr", ""),
         outdir=config["geo_outdir"],
+    threads: 8
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=35, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
@@ -137,7 +116,7 @@ rule geo_fastq_dump_single:
         exec &> {log}
 
         echo "Extracting FASTQ files from {params.srr}"
-        fastq-dump {input.sra} --skip-technical --outdir {params.outdir}
+        fasterq-dump {input.sra} --skip-technical --outdir {params.outdir} -e {threads}
 
         echo "Renaming file"
         mv {params.outdir}/{params.srr}.fastq {output.r1}
