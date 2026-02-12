@@ -1553,18 +1553,17 @@ def download(
     # Create output directory
     outdir.mkdir(parents=True, exist_ok=True)
 
-    # Create temporary Snakemake config
+    # Create Snakemake config for downloads
     temp_config = {
         "geo_samples_paired": geo_samples_paired,
         "geo_samples_single": geo_samples_single,
         "geo_outdir": str(outdir.resolve()),
     }
 
-    config_file = Path(".geo_download_config.yaml")
+    config_file = Path("seqnado_output/logs/geo_download/geo_download_config.yaml")
+    config_file.parent.mkdir(parents=True, exist_ok=True)
     with open(config_file, "w") as f:
         yaml.dump(temp_config, f)
-
-    logger.info(f"Created temporary config: {config_file}")
 
     # Get the download.smk file from package
     pkg_root_trav = _pkg_traversable("seqnado")
@@ -1631,10 +1630,6 @@ def download(
 
         # Execute Snakemake
         result = subprocess.run(cmd, cwd=str(Path.cwd()))
-
-        # Clean up temporary config
-        if config_file.exists():
-            config_file.unlink()
 
         if result.returncode != 0:
             logger.error(f"Snakemake failed with exit code {result.returncode}")
