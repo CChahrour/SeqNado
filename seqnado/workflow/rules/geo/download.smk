@@ -19,7 +19,7 @@ rule geo_prefetch:
     params:
         outdir=config["geo_outdir"] + "/sra_cache",
     resources:
-        mem=lambda wildcards, attempt: define_memory_requested(initial_value=10, attempts=attempt, scale=SCALE_RESOURCES),
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
     message:
         "Prefetching SRA data for {wildcards.srr}"
@@ -57,7 +57,7 @@ rule geo_fastq_dump_paired:
         outdir=config["geo_outdir"],
     threads: 8
     resources:
-        mem=lambda wildcards, attempt: define_memory_requested(initial_value=35, attempts=attempt, scale=SCALE_RESOURCES),
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
     message:
         "Extracting paired-end FASTQ files for {wildcards.sample_name} ({params.srr})"
@@ -101,7 +101,7 @@ rule geo_fastq_dump_single:
         outdir=config["geo_outdir"],
     threads: 8
     resources:
-        mem=lambda wildcards, attempt: define_memory_requested(initial_value=35, attempts=attempt, scale=SCALE_RESOURCES),
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=6, attempts=attempt, scale=SCALE_RESOURCES),
     message:
         "Extracting single-end FASTQ files for {wildcards.sample_name} ({params.srr})"
