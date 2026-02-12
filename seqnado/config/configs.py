@@ -439,10 +439,17 @@ class RNAQuantificationConfig(BaseModel, PathValidatorMixin):
     method: QuantificationMethod
     salmon_index: str | None = None
     run_deseq2: bool = False
+    strandedness: int = 0
 
     @field_validator("salmon_index")
     def validate_salmon_index(cls, v: str | None, info: ValidationInfo) -> str | None:
         return cls.validate_path_exists(v, "Salmon index path", info)
+
+    @field_validator("strandedness")
+    def validate_strandedness(cls, v: int) -> int:
+        if v not in {0, 1, 2}:
+            raise ValueError("strandedness must be 0 (unstranded), 1 (forward), or 2 (reverse).")
+        return v
 
 
 class SNPCallingConfig(BaseModel, PathValidatorMixin):

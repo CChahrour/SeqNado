@@ -1677,7 +1677,7 @@ def download(
                 df,
                 schema_candidates,
                 interactive=True,
-                accept_all_defaults=False,
+                accept_all_defaults=True,
                 deseq2_pattern=None,
                 assay=_assay,
             )

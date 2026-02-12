@@ -300,6 +300,7 @@ class TestBuildDefaultAssayConfig:
         assert result.rna_quantification is not None
         assert result.rna_quantification.method == QuantificationMethod.FEATURE_COUNTS
         assert result.rna_quantification.run_deseq2 is False
+        assert result.rna_quantification.strandedness == 0
 
     def test_build_default_snp_config(self, mock_genome_config):
         """Test building default SNP assay configuration."""
@@ -536,6 +537,257 @@ class TestBuildWorkflowConfig:
         assert config.assay == Assay.RNA
         assert isinstance(config.assay_config, RNAAssayConfig)
         assert isinstance(config.genome.index, STARIndex)
+
+
+class TestRNAQuantificationConfig:
+    """Tests for RNAQuantificationConfig model and validation."""
+
+    def test_rna_quantification_config_creation_with_defaults(self):
+        """Test creating RNAQuantificationConfig with default values."""
+        from seqnado.config.configs import RNAQuantificationConfig
+
+        config = RNAQuantificationConfig(method=QuantificationMethod.FEATURE_COUNTS)
+
+        assert config.method == QuantificationMethod.FEATURE_COUNTS
+        assert config.strandedness == 0
+        assert config.run_deseq2 is False
+        assert config.salmon_index is None
+
+    def test_rna_quantification_config_strandedness_unstranded(self):
+        """Test RNAQuantificationConfig with unstranded reads (0)."""
+        from seqnado.config.configs import RNAQuantificationConfig
+
+        config = RNAQuantificationConfig(
+            method=QuantificationMethod.FEATURE_COUNTS,
+            strandedness=0
+        )
+
+        assert config.strandedness == 0
+
+    def test_rna_quantification_config_strandedness_forward(self):
+        """Test RNAQuantificationConfig with forward-stranded reads (1)."""
+        from seqnado.config.configs import RNAQuantificationConfig
+
+        config = RNAQuantificationConfig(
+            method=QuantificationMethod.FEATURE_COUNTS,
+            strandedness=1
+        )
+
+        assert config.strandedness == 1
+
+    def test_rna_quantification_config_strandedness_reverse(self):
+        """Test RNAQuantificationConfig with reverse-stranded reads (2)."""
+        from seqnado.config.configs import RNAQuantificationConfig
+
+        config = RNAQuantificationConfig(
+            method=QuantificationMethod.FEATURE_COUNTS,
+            strandedness=2
+        )
+
+        assert config.strandedness == 2
+
+    def test_rna_quantification_config_invalid_strandedness(self):
+        """Test RNAQuantificationConfig rejects invalid strandedness values."""
+        from seqnado.config.configs import RNAQuantificationConfig
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError) as exc_info:
+            RNAQuantificationConfig(
+                method=QuantificationMethod.FEATURE_COUNTS,
+                strandedness=3  # Invalid: must be 0, 1, or 2
+            )
+
+        assert "strandedness must be 0 (unstranded), 1 (forward), or 2 (reverse)" in str(exc_info.value)
+
+    def test_rna_quantification_config_invalid_negative_strandedness(self):
+        """Test RNAQuantificationConfig rejects negative strandedness values."""
+        from seqnado.config.configs import RNAQuantificationConfig
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError) as exc_info:
+            RNAQuantificationConfig(
+                method=QuantificationMethod.FEATURE_COUNTS,
+                strandedness=-1
+            )
+
+        assert "strandedness must be 0 (unstranded), 1 (forward), or 2 (reverse)" in str(exc_info.value)
+
+    def test_rna_quantification_config_with_run_deseq2(self):
+        """Test RNAQuantificationConfig with DESeq2 enabled."""
+        from seqnado.config.configs import RNAQuantificationConfig
+
+        config = RNAQuantificationConfig(
+            method=QuantificationMethod.FEATURE_COUNTS,
+            strandedness=1,
+            run_deseq2=True
+        )
+
+        assert config.run_deseq2 is True
+        assert config.strandedness == 1
+
+    def test_rna_quantification_config_salmon_with_strandedness(self):
+        """Test RNAQuantificationConfig with salmon method and strandedness."""
+        from seqnado.config.configs import RNAQuantificationConfig
+
+        config = RNAQuantificationConfig.model_validate(
+            {
+                "method": QuantificationMethod.SALMON,
+                "salmon_index": "path/to/salmon_index",
+                "strandedness": 0,
+            },
+            context={"skip_path_validation": True},
+        )
+
+        assert config.method == QuantificationMethod.SALMON
+        assert config.strandedness == 0
+        assert config.salmon_index == "path/to/salmon_index"
+
+
+class TestGetRNAQuantificationConfig:
+    """Tests for get_rna_quantification_config function."""
+
+    def test_get_rna_quantification_config_feature_counts_prompts_strandedness(self, monkeypatch):
+        """Test get_rna_quantification_config prompts for strandedness when method is feature_counts."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["feature_counts", "1", "no"])
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.method == QuantificationMethod.FEATURE_COUNTS
+        assert config.strandedness == 1
+        assert config.run_deseq2 is False
+
+    def test_get_rna_quantification_config_salmon_defaults_strandedness(self, monkeypatch):
+        """Test get_rna_quantification_config defaults strandedness to 0 when method is salmon."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["salmon", "path/to/salmon_index", "no"])
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.method == QuantificationMethod.SALMON
+        assert config.strandedness == 0  # Salmon doesn't prompt for strandedness
+        assert config.salmon_index == "path/to/salmon_index"
+
+    def test_get_rna_quantification_config_feature_counts_strandedness_forward(self, monkeypatch):
+        """Test get_rna_quantification_config accepts forward strandedness for feature_counts."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["feature_counts", "1", "no"])
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.strandedness == 1
+
+    def test_get_rna_quantification_config_feature_counts_strandedness_reverse(self, monkeypatch):
+        """Test get_rna_quantification_config accepts reverse strandedness for feature_counts."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["feature_counts", "2", "no"])
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.strandedness == 2
+
+    def test_get_rna_quantification_config_feature_counts_default_strandedness(self, monkeypatch):
+        """Test get_rna_quantification_config defaults to unstranded (0) for feature_counts."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["feature_counts", "", "no"])  # Empty input uses default
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.strandedness == 0
+
+    def test_get_rna_quantification_config_feature_counts_invalid_strandedness_retries(self, monkeypatch):
+        """Test get_rna_quantification_config retries on invalid strandedness."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["feature_counts", "invalid", "1", "no"])  # Invalid, then valid
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.strandedness == 1
+
+    def test_get_rna_quantification_config_deseq2_enabled(self, monkeypatch):
+        """Test get_rna_quantification_config with DESeq2 enabled."""
+        from seqnado.config.user_input import get_rna_quantification_config
+
+        inputs = iter(["feature_counts", "0", "yes"])
+        monkeypatch.setattr('builtins.input', lambda _: next(inputs))
+
+        config = get_rna_quantification_config()
+
+        assert config.run_deseq2 is True
+        assert config.strandedness == 0
+
+
+class TestBuildDefaultAssayConfigRNA:
+    """Tests for build_default_assay_config with RNA assay and strandedness."""
+
+    @pytest.fixture
+    def test_data_dir(self, tmp_path):
+        """Create test data directory structure with necessary files."""
+        genome_dir = tmp_path / "genome"
+        genome_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create STAR index directory
+        star_dir = genome_dir / "STAR_chr21_rna_spikein"
+        star_dir.mkdir(parents=True, exist_ok=True)
+        for i in range(1, 6):
+            (star_dir / f"SA_{i}.txt").write_text(f"Mock content for SA_{i}.txt\n")
+
+        # Create fasta index file
+        fasta_index = genome_dir / "chr21.fa.fai"
+        fasta_index.write_text("chr21\t48129895\t4\t50\t51\n")
+
+        # Create GTF file
+        gtf_file = genome_dir / "chr21.gtf"
+        gtf_file.write_text("chr21\tENSEMBL\texon\t1\t1000\t.\t+\t.\tgene_id \"gene1\";\n")
+
+        return genome_dir
+
+    @pytest.fixture
+    def mock_genome_config_rna(self, test_data_dir):
+        """Create a mock genome configuration for RNA assay."""
+        star_index = str(test_data_dir / "STAR_chr21_rna_spikein")
+        fasta = str(test_data_dir / "chr21.fa.fai")
+        gtf = str(test_data_dir / "chr21.gtf")
+
+        return GenomeConfig(
+            name="hg38",
+            index=STARIndex(prefix=star_index),
+            fasta=fasta,
+            gtf=gtf,
+        )
+
+    def test_build_default_rna_config_has_strandedness(self, mock_genome_config_rna):
+        """Test that default RNA config includes strandedness field."""
+        result = build_default_assay_config(Assay.RNA, mock_genome_config_rna)
+
+        assert isinstance(result, RNAAssayConfig)
+        assert result.rna_quantification is not None
+        assert hasattr(result.rna_quantification, "strandedness")
+        assert result.rna_quantification.strandedness == 0
+
+    def test_build_default_rna_config_strandedness_default_zero(self, mock_genome_config_rna):
+        """Test that default RNA config sets strandedness to 0 (unstranded)."""
+        result = build_default_assay_config(Assay.RNA, mock_genome_config_rna)
+
+        assert result.rna_quantification.strandedness == 0
+
+    def test_build_default_rna_config_uses_feature_counts(self, mock_genome_config_rna):
+        """Test that default RNA config uses feature_counts method."""
+        result = build_default_assay_config(Assay.RNA, mock_genome_config_rna)
+
+        assert result.rna_quantification.method == QuantificationMethod.FEATURE_COUNTS
 
 
 class TestGetUserInput:

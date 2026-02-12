@@ -150,7 +150,7 @@ rule compress_fastq_files:
         config["geo_outdir"] + "/{filename}.fastq"
     output:
         config["geo_outdir"] + "/{filename}.fastq.gz"
-    threads: 4
+    threads: 32
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),

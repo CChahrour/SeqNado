@@ -459,6 +459,14 @@ def get_rna_quantification_config() -> Optional[RNAQuantificationConfig]:
         default="feature_counts",
     )
 
+    strandedness = "0"
+    if method == "feature_counts":
+        strandedness = get_user_input(
+            "Strandedness? (0=unstranded, 1=forward, 2=reverse)",
+            choices=["0", "1", "2"],
+            default="0",
+        )
+
     salmon_index = None
     if method == "salmon":
         salmon_index = get_user_input(
@@ -474,6 +482,7 @@ def get_rna_quantification_config() -> Optional[RNAQuantificationConfig]:
             "method": QuantificationMethod(method),
             "salmon_index": salmon_index,
             "run_deseq2": run_deseq2,
+            "strandedness": int(strandedness),
         },
         context={"skip_path_validation": is_placeholder}
     )
@@ -778,6 +787,7 @@ def build_default_assay_config(
                 method=QuantificationMethod.FEATURE_COUNTS,
                 salmon_index=None,
                 run_deseq2=False,
+                strandedness=0,
             )
             return RNAAssayConfig(**base_config, rna_quantification=rna_quantification)
         
