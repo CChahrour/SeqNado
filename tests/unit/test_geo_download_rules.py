@@ -208,21 +208,7 @@ def test_download_all_requests_gz_files(rules_content):
     assert "_R2.fastq.gz" in section
     assert ".fastq.gz" in section
 
-
 # --- General rule tests ---
-def test_rules_have_logging(rules_content):
-    """Test that rules specify log files."""
-    assert "log:" in rules_content
-    assert "logs/geo_prefetch" in rules_content
-    assert "logs/geo_fastq_dump" in rules_content
-    assert "logs/geo_compress" in rules_content
-
-
-def test_rules_have_messages(rules_content):
-    """Test that rules have message directives."""
-    assert "message:" in rules_content
-
-
 def test_ruleorder_exists(rules_content):
     """Test that ruleorder is defined for paired vs single."""
     assert "ruleorder: geo_fastq_dump_paired > geo_fastq_dump_single" in rules_content

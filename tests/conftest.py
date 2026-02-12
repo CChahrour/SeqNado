@@ -3,6 +3,12 @@ from pathlib import Path
 
 import pytest
 
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Ensure a clean pytest basetemp directory for this repo."""
+    test_output = Path(__file__).parent.parent / "test_output"
+    if test_output.exists():
+        shutil.rmtree(test_output, ignore_errors=True)
+
 
 
 @pytest.fixture
