@@ -244,7 +244,7 @@ HOMER creates tag directories for downstream analysis:
 
 ```
 tag_dirs/chip-rx_MLL/
-├── tagInfo.txt                    # Read statistics
+├── tagInfo.txt                     # Read statistics
 ├── tagLengthDistribution.txt       # Fragment sizes
 ├── tagCountDistribution.txt        # Tag depth per position
 ├── freqDistribution.txt            # Frequency statistics
@@ -293,16 +293,16 @@ Ready-to-submit files for GEO/SRA (when enabled):
 
 ```
 geo_submission/
-├── samples_table.txt                  # Sample metadata (TSV format)
-├── md5sums.txt                        # Combined checksums
-├── raw_data_checksums.txt            # Checksums for raw FASTQs
-├── processed_data_checksums.txt      # Checksums for processed files
-├── upload_instructions.txt           # GEO upload instructions
-├── chip-rx_MLL_1.fastq.gz           # Symlinks to raw FASTQ R1
-├── chip-rx_MLL_2.fastq.gz           # Symlinks to raw FASTQ R2
-├── chip-rx_MLL_deeptools_unscaled.bigWig  # Renamed processed files
-├── chip-rx_MLL_macs2.bed
-└── chip/                             # Upload directory
+├── samples_table.txt                       # Sample metadata (TSV format)
+├── md5sums.txt                             # Combined checksums
+├── raw_data_checksums.txt                  # Checksums for raw FASTQs
+├── processed_data_checksums.txt            # Checksums for processed files
+├── upload_instructions.txt                 # GEO upload instructions
+├── chip-rx_MLL_1.fastq.gz                  # Symlinks to raw FASTQ R1
+├── chip-rx_MLL_2.fastq.gz                  # Symlinks to raw FASTQ R2
+├── chip-rx_MLL_deeptools_unscaled.bigWig   # Renamed processed files
+├── chip-rx_MLL_macs2.bed                   
+└── chip/                                   # Upload directory
 ```
 
 Files are flattened from the nested directory structure into a single directory with descriptive filenames that encode the tool and scaling method.
@@ -315,9 +315,9 @@ Publication-ready visualisations of genomic regions (when plotting coordinates a
 
 ```
 genome_browser_plots/
-├── MYC_promoter.svg                   # Named region from BED file
-├── chr1-1000000-1005000.svg          # Unnamed region uses coordinates
-└── template.toml                      # PlotNado configuration template
+├── MYC_promoter.svg             # Named region from BED file
+├── chr1-1000000-1005000.svg     # Unnamed region uses coordinates
+└── template.toml                # PlotNado configuration template
 ```
 
 Plot filenames are derived from the Name column in the input BED file, or from `{chr}-{start}-{end}` if no name is provided. Output format can be `svg`, `png`, or `pdf` as configured.
@@ -356,7 +356,7 @@ find seqnado_output/ -name "*.bigWig"
 ## Understanding File Formats
 
 ### BAM Files
-- **Binary alignment format** (use `samtools view` to inspect)
+- **Binary alignment format** (`.bam` extension)
 - Stores aligned sequencing reads
 - Includes alignment quality, CIGAR strings, and flags
 
@@ -366,12 +366,12 @@ find seqnado_output/ -name "*.bigWig"
 - Contains normalised signal values
 
 ### BED Files
-- **Tab-delimited genomic coordinates**
+- **Tab-delimited genomic coordinates** (`.bed` extension)
 - SeqNado peak outputs use 3-column BED: chr, start, end
 - Standard BED can include additional columns (name, score, strand)
 
 ### FastQ Files
-- **Raw sequencing reads** (if retained)
+- **Raw sequencing reads** (`.fastq.gz` extension)
 - Four lines per read: header, sequence, +, quality scores
 - Usually gzip compressed (.gz)
 
