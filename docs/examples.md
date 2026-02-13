@@ -4,7 +4,7 @@ This page showcases example outputs from SeqNado pipelines to help you understan
 
 ## SeqNado QC Report
 
-The main `seqnado_report.html` provides an interactive MultiQC dashboard with comprehensive quality control metrics.
+The main `seqnado_report.html` provides a MultiQC report with comprehensive quality control metrics.
 
 ### Report Sections
 
