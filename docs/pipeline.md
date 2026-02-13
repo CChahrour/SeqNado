@@ -50,7 +50,7 @@ Identifies regions of open chromatin by sequencing DNA accessible to the Tn5 tra
 - **Filtering**: Mitochondrial reads are removed because Tn5 preferentially inserts into mitochondrial DNA, which would otherwise dominate the library. PCR duplicates are also removed. Reads overlapping ENCODE blacklist regions are discarded to avoid artefactual signal.
 - **Tn5 Shift Correction**: Reads are shifted +4/-5 bp to account for the 9 bp staggered cut that Tn5 makes on insertion. This centres the signal on the actual insertion site rather than the fragment ends. Controlled by the `shift_for_tn5_insertion` config option.
 - **Peak Calling**: MACS2 is the standard choice for most ATAC-seq experiments. LanceOtron uses a deep-learning approach and can be better at detecting broad or weak peaks. HOMER is also available.
-- **Consensus Peaks**: When samples are grouped via a `merge` column in the design file, BAMs are merged and peaks are re-called on the combined data to produce a robust consensus peak set.
+- **Consensus Peaks**: When samples are grouped via a `consensus_group` column in the design file, BAMs are merged and peaks are re-called on the combined data to produce a robust consensus peak set.
 - **QC**: TSS enrichment scores measure signal-to-noise — a high score (>7) confirms that open chromatin regions are well-captured. Fragment size distributions should show a clear nucleosomal banding pattern. FRiP (Fraction of Reads in Peaks) quantifies how much of your library falls within called peaks.
 
 ### ChIP-seq (ChIP)

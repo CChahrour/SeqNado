@@ -148,8 +148,6 @@ nav:
     - Inputs API: api/inputs.md
     - Outputs API: api/outputs.md
     - Third-Party Tools: tools.md
-    - Assay Configurations: assays.md
-    - Tool Config Examples: tool-config-examples.md
     - Citation Guidelines: citation.md
   - Help:
     - Troubleshooting: troubleshooting.md

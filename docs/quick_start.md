@@ -134,7 +134,7 @@ seqnado download [OPTIONS] METADATA_TSV
 - **METADATA_TSV**: Path to TSV file from GEO/ENA with run information. Must contain columns: `run_accession`, `sample_title`, `library_name`, and `library_layout`.
 
 #### Options
-- `--outdir, -o`: Output directory for downloaded FASTQ files (default: `geo_data`).
+- `--outdir, -o`: Output directory for downloaded FASTQ files (default: `fastqs`).
 - `--assay, -a`: Assay type for generating design file after download. If not provided, only downloads FASTQs.
 - `--design-output, -d`: Output path for design CSV (default: `metadata_{assay}.csv` in outdir).
 - `--cores, -c`: Number of parallel download jobs (default: 4).
@@ -206,7 +206,7 @@ seqnado pipeline [OPTIONS] [ASSAY]
 - `--preset`: Snakemake job profile preset. Options include:
   - `lc`: Local cluster
   - `le`: Local execution (default)
-  - `ls`: Local single-threaded
+  - `ls`: Local Singularity
   - `ss`: SLURM scheduler
   - `t`: Test mode
 - `--clean-symlinks, --no-clean-symlinks`: Remove symlinks created by previous runs (default: disabled).

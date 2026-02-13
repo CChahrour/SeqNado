@@ -132,10 +132,10 @@ $ seqnado download [OPTIONS] METADATA_TSV
 
 **Options**:
 
-* `-o, --outdir PATH`: Output directory for downloaded FASTQ files.  [default: geo_downloads]
+* `-o, --outdir PATH`: Output directory for downloaded FASTQ files.  [default: fastqs]
 * `-a, --assay [rna|atac|chip|cat|snp|meth|mcc|crispr]`: Assay type for auto-generating design file after download.
 * `-d, --design-output PATH`: Path for generated design file (only with --assay).  [default: metadata_{assay}.csv]
-* `-c, --cores INTEGER`: Number of parallel download jobs.  [default: 1]
+* `-c, --cores INTEGER`: Number of parallel download jobs.  [default: 4]
 * `--preset [lc|le|ls|ss|t]`: Snakemake execution profile preset.  [default: le]
 * `-n, --dry-run`: Show what would be run without executing downloads.
 * `-v, --verbose`: Increase logging verbosity.
