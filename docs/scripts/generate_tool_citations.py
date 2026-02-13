@@ -3,7 +3,7 @@
 Generate Tool Sections for Documentation
 
 This script uses SeqNado's tools module to automatically generate
-tool sections in docs/tools.md, organized by category.
+tool sections in docs/citation.md, organized by category.
 
 Usage:
     python docs/scripts/generate_tool_citations.py --update
@@ -182,7 +182,7 @@ def generate_tools_section() -> str:
 
 
 def update_tools_md(doc_path: Path, dry_run: bool = False) -> bool:
-    """Update the tools.md file with auto-generated tool sections"""
+    """Update the citation.md file with auto-generated tool sections"""
     if not doc_path.exists():
         print(f"Error: {doc_path} does not exist")
         return False
@@ -227,8 +227,8 @@ def main():
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("docs/tools.md"),
-        help="Path to the markdown file (default: docs/tools.md)",
+        default=Path("docs/citation.md"),
+        help="Path to the markdown file (default: docs/citation.md)",
     )
     parser.add_argument(
         "--update", action="store_true", help="Update the file in place"

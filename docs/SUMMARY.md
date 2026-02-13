@@ -21,6 +21,7 @@
     * [Outputs API](api/outputs.md)
     * [Assay Configurations](assays.md)
     * [Tool Config Examples](tool-config-examples.md)
+    * [Citation Guidelines](citation.md)
 * Help
     * [Troubleshooting](troubleshooting.md)
     * [HPC Clusters](cluster_config.md)

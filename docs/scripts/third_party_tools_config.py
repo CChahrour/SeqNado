@@ -229,7 +229,7 @@ Each tool configuration follows consistent patterns:
             if tool in all_tools:
                 field_info = config_class.model_fields[tool]
                 description = field_info.description or "Tool configuration"
-                md += f"- **[{tool}](tools.md#{tool})** - {description}\n"
+                md += f"- **[{tool}](citation.md#{tool})** - {description}\n"
         
         md += "\n"
     
@@ -244,7 +244,7 @@ Each tool configuration follows consistent patterns:
         for tool in sorted(uncategorized):
             field_info = config_class.model_fields[tool]
             description = field_info.description or "Tool configuration"
-            md += f"- **[{tool}](tools.md#{tool})** - {description}\n"
+            md += f"- **[{tool}](citation.md#{tool})** - {description}\n"
         md += "\n"
     
     return md
@@ -473,7 +473,7 @@ def generate_all_documentation(config_class: Type[BaseModel],
     Generate all documentation pages.
     
     Returns a dictionary mapping filename to content for each documentation page.
-    Note: tools-index.md is not generated as docs/tools.md serves as the main reference.
+    Note: tools-index.md is not generated as docs/citation.md serves as the main reference.
     """
     return {
         "assays.md": generate_assay_documentation(get_assay_specific_tools_func, assay_enum_class),
