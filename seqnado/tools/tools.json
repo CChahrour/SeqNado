@@ -6,10 +6,10 @@
             "usage": "Run containerized tools in HPC environments",
             "description": "Container runtime for running Singularity/Apptainer images on HPC clusters",
             "command": "apptainer",
-            "version": "User-managed (see installation docs)",
             "category": "Utilities",
             "container": "Environment",
-            "citation": "apptainer"
+            "citation": "apptainer",
+            "version": "User-managed (see installation docs)"
         },
         "bcftools": {
             "display_name": "BCFtools",

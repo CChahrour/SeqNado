@@ -3,7 +3,7 @@
 When publishing results from SeqNado, please cite:
 
 1. **SeqNado** itself (citation pending - check [GitHub releases](https://github.com/Milne-Group/SeqNado/releases) for latest version)
-2. **Key tools** used in your specific analysis (see [References](#references) section below)
+2. **Key tools** used in your specific analysis (see [References](#tools) section below)
 3. **Snakemake** workflow manager: Mölder F, Jablonski KP, Letcher B, et al. Sustainable data analysis with Snakemake. *F1000Research*. 2021;10:33.
 4. **Reference genomes** used (e.g., hg38, mm10)
 
