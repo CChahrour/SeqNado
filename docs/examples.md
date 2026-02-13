@@ -1,19 +1,6 @@
 # Output Examples
 
-This page showcases example outputs from SeqNado pipelines to help you understand what to expect from your analyses.
-
-??? abstract "Table of Contents"
-    - [SeqNado QC Report](#seqnado-qc-report)
-    - [ChIP-seq Example Output](#chip-seq-example-output)
-    - [ATAC-seq Example Output](#atac-seq-example-output)
-    - [Qualimap BAM QC Report](#qualimap-bam-qc-report)
-    - [Example FastQ Screen Results](#example-fastq-screen-results)
-    - [HOMER Tag Directory](#homer-tag-directory)
-    - [BigWig Coverage Tracks](#bigwig-coverage-tracks)
-    - [GEO Submission Files](#geo-submission-files)
-    - [Genome Browser Plots (PlotNado)](#genome-browser-plots-plotnado)
-    - [Tips for Exploring Outputs](#tips-for-exploring-outputs)
-    - [Understanding File Formats](#understanding-file-formats)
+This page showcases example outputs from SeqNado pipelines to help you understand what to expect from your analyses. All examples are based on real test data processed through the pipeline.
 
 ## SeqNado QC Report
 
