@@ -11,7 +11,7 @@
     * [Pipeline Overview](pipeline.md)
     * [Outputs](outputs.md)
     * [Output Examples](examples.md)
-    * [Tools Reference](tools.md)
+    * [Third-Party Tools](tools.md)
     * [CLI Reference](cli.md)
 * Reference
     * [API Overview](api/index.md)

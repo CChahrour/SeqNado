@@ -1,8 +1,8 @@
-# Third-Party Tools Reference
+# Third-Party Tools
 
-SeqNado integrates multiple best-in-class bioinformatics tools to provide comprehensive genomics analysis pipelines. This page documents the tools used, their purposes, and key references.
+SeqNado integrates multiple best-in-class bioinformatics tools to provide comprehensive genomics analysis pipelines. For a full list of tools with references, see the [Citation Guidelines](citation.md#tools).
 
-## Tool Versions & Updates
+## Checking Tool Versions
 
 All tools are version-locked in SeqNado containers to ensure reproducibility. To check versions and get tool information, use the `seqnado tools` command:
 
