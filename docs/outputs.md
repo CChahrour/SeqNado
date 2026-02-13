@@ -7,7 +7,7 @@ All SeqNado analysis results are organized within the `seqnado_output/` director
 ## General Output Structure
 
 ```
-seqnado_output/{assay}/       # Assay-specific directory (atac, chip, rna, cat, snp, meth, mcc, crispr)
+seqnado_output/{assay}/       # Assay-specific directory
 ├── seqnado_report.html       # Main interactive QC report (MultiQC)
 ├── protocol.txt              # Auto-generated data processing protocol
 ├── aligned/                  # Final BAM alignment files
