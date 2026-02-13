@@ -10,7 +10,7 @@
             "category": "Utilities",
             "container": "Environment",
             "citation": "apptainer"
-            },
+        },
         "bcftools": {
             "display_name": "BCFtools",
             "usage": "Process VCF/BCF variant files",
@@ -18,7 +18,8 @@
             "command": "bcftools",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "samtools"
+            "citation": "samtools",
+            "version": "1.22"
         },
         "bedtools": {
             "display_name": "BEDTools",
@@ -27,7 +28,8 @@
             "command": "bedtools",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "bedtools"
+            "citation": "bedtools",
+            "version": "2.31.1"
         },
         "bedToBigBed": {
             "display_name": "bedToBigBed",
@@ -36,7 +38,8 @@
             "command": "bedToBigBed",
             "category": "Utilities",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "ucsc-tools"
+            "citation": "ucsc-tools",
+            "version": "482"
         },
         "bamnado": {
             "display_name": "BamNado",
@@ -55,7 +58,8 @@
                 "split-exogenous",
                 "modify"
             ],
-            "citation": "bamnado"
+            "citation": "bamnado",
+            "version": "0.4.4"
         },
         "bowtie2": {
             "display_name": "Bowtie2",
@@ -64,7 +68,8 @@
             "command": "bowtie2",
             "category": "Alignment",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "bowtie2"
+            "citation": "bowtie2",
+            "version": "2.5.4"
         },
         "cooler": {
             "display_name": "Cooler",
@@ -73,7 +78,8 @@
             "command": "cooler",
             "category": "Analysis",
             "container": "docker://ghcr.io/alsmith151/mccnado:latest",
-            "citation": "cooler"
+            "citation": "cooler",
+            "version": "0.10.4"
         },
         "cutadapt": {
             "display_name": "Cutadapt",
@@ -82,7 +88,8 @@
             "command": "cutadapt",
             "category": "Preprocessing",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "cutadapt"
+            "citation": "cutadapt",
+            "version": "5.1"
         },
         "deeptools": {
             "display_name": "deepTools",
@@ -100,7 +107,8 @@
                 "multiBamSummary",
                 "plotHeatmap",
                 "plotProfile"
-            ]
+            ],
+            "version": "3.5.6"
         },
         "fasterq-dump": {
             "display_name": "SRA Toolkit (fasterq-dump)",
@@ -109,7 +117,8 @@
             "command": "fasterq-dump",
             "category": "Download",
             "container": "docker://quay.io/biocontainers/sra-tools:3.0.10--h9f5acd7_0",
-            "citation": "sra-toolkit"
+            "citation": "sra-toolkit",
+            "version": "3.0.10"
         },
         "fastq-screen": {
             "display_name": "FastQ Screen",
@@ -118,7 +127,8 @@
             "command": "fastq_screen",
             "category": "Quality Control",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "fastq-screen"
+            "citation": "fastq-screen",
+            "version": "0.16.0"
         },
         "fastqc": {
             "display_name": "FastQC",
@@ -127,7 +137,8 @@
             "command": "fastqc",
             "category": "Quality Control",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "fastqc"
+            "citation": "fastqc",
+            "version": "0.12.1"
         },
         "featureCounts": {
             "display_name": "featureCounts",
@@ -136,7 +147,8 @@
             "command": "featureCounts",
             "category": "Quantification",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "featurecounts"
+            "citation": "featurecounts",
+            "version": "2.1.1"
         },
         "findPeaks": {
             "display_name": "findPeaks (HOMER)",
@@ -145,7 +157,8 @@
             "command": "findPeaks",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "homer"
+            "citation": "homer",
+            "version": "5.1"
         },
         "flash": {
             "display_name": "FLASH",
@@ -154,7 +167,8 @@
             "command": "flash",
             "category": "Preprocessing",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "flash"
+            "citation": "flash",
+            "version": "1.2.11"
         },
         "homer": {
             "display_name": "HOMER",
@@ -168,7 +182,8 @@
                 "makeTagDirectory",
                 "findMotifsGenome.pl",
                 "makeBigWig.pl"
-            ]
+            ],
+            "version": "5.1"
         },
         "lanceotron": {
             "display_name": "LanceOtron",
@@ -177,7 +192,8 @@
             "command": "lanceotron",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_ml_cpu:latest",
-            "citation": "lanceotron"
+            "citation": "lanceotron",
+            "version": "1.2.7"
         },
         "macs": {
             "display_name": "MACS2",
@@ -186,7 +202,8 @@
             "command": "macs",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "macs"
+            "citation": "macs",
+            "version": "2.2.9.1"
         },
         "mccnado": {
             "display_name": "MCCNado",
@@ -195,7 +212,8 @@
             "command": "mccnado",
             "category": "Analysis",
             "container": "docker://ghcr.io/alsmith151/mccnado:latest",
-            "citation": "mccnado"
+            "citation": "mccnado",
+            "version": "0.1.6"
         },
         "mageck": {
             "display_name": "MAGeCK",
@@ -204,7 +222,8 @@
             "command": "mageck",
             "category": "Analysis",
             "container": "docker://quay.io/biocontainers/mageck:0.5.9.5--py310h184ae93_8",
-            "citation": "mageck"
+            "citation": "mageck",
+            "version": "0.5.9.5"
         },
         "makeTagDirectory": {
             "display_name": "makeTagDirectory (HOMER)",
@@ -213,7 +232,8 @@
             "command": "makeTagDirectory",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "homer"
+            "citation": "homer",
+            "version": "5.1"
         },
         "meme": {
             "display_name": "MEME Suite",
@@ -222,7 +242,8 @@
             "command": "meme",
             "category": "Analysis",
             "container": "docker://quay.io/biocontainers/meme:5.5.9--pl5321h1ca524f_0",
-            "citation": "meme"
+            "citation": "meme",
+            "version": "5.5.9"
         },
         "methyldackel": {
             "display_name": "MethylDackel",
@@ -231,7 +252,8 @@
             "command": "MethylDackel",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "methyldackel"
+            "citation": "methyldackel",
+            "version": "0.6.1"
         },
         "minimap2": {
             "display_name": "minimap2",
@@ -240,7 +262,8 @@
             "command": "minimap2",
             "category": "Alignment",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "minimap2"
+            "citation": "minimap2",
+            "version": "2.30"
         },
         "multiqc": {
             "display_name": "MultiQC",
@@ -249,7 +272,8 @@
             "command": "multiqc",
             "category": "Reporting",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "multiqc"
+            "citation": "multiqc",
+            "version": "1.31"
         },
         "pigz": {
             "display_name": "pigz",
@@ -258,7 +282,8 @@
             "command": "pigz",
             "category": "Utilities",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "pigz"
+            "citation": "pigz",
+            "version": "2.8"
         },
         "picard": {
             "display_name": "Picard",
@@ -267,7 +292,8 @@
             "command": "picard",
             "category": "Alignment",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "picard"
+            "citation": "picard",
+            "version": "3.4.0"
         },
         "plotnado": {
             "display_name": "PlotNado",
@@ -286,7 +312,8 @@
             "command": "qualimap",
             "category": "Quality Control",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "qualimap"
+            "citation": "qualimap",
+            "version": "2.3"
         },
         "quarto": {
             "display_name": "Quarto",
@@ -295,7 +322,8 @@
             "command": "quarto",
             "category": "Reporting",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "quarto"
+            "citation": "quarto",
+            "version": "1.8.25"
         },
         "quantnado": {
             "display_name": "QuantNado",
@@ -304,7 +332,8 @@
             "command": "quantnado-make-dataset",
             "category": "Quantification",
             "container": "oras://ghcr.io/alsmith151/seqnado_ml_cpu:latest",
-            "citation": "quantnado"
+            "citation": "quantnado",
+            "version": "0.2.5"
         },
         "salmon": {
             "display_name": "Salmon",
@@ -313,7 +342,8 @@
             "command": "salmon",
             "category": "Quantification",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "salmon"
+            "citation": "salmon",
+            "version": "1.10.3"
         },
         "samtools": {
             "display_name": "SAMtools",
@@ -322,7 +352,8 @@
             "command": "samtools",
             "category": "Alignment",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "samtools"
+            "citation": "samtools",
+            "version": "1.22.1"
         },
         "seacr": {
             "display_name": "SEACR",
@@ -331,14 +362,15 @@
             "command": "SEACR",
             "category": "Analysis",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "seacr"
+            "citation": "seacr",
+            "version": "1.3"
         },
         "snakemake": {
             "display_name": "Snakemake",
             "usage": "Workflow management and execution",
             "description": "Workflow management system for reproducible and scalable data analysis",
             "command": "snakemake",
-            "version": "≥9.12.0",
+            "version": "\u22659.12.0",
             "category": "Utilities",
             "container": "Environment",
             "citation": "snakemake"
@@ -350,7 +382,8 @@
             "command": "STAR",
             "category": "Alignment",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "star"
+            "citation": "star",
+            "version": "2.7.11b"
         },
         "subread": {
             "display_name": "Subread",
@@ -359,7 +392,8 @@
             "command": "featureCounts",
             "category": "Quantification",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "subread"
+            "citation": "subread",
+            "version": "2.1.1"
         },
         "trackhub": {
             "display_name": "trackhub",
@@ -368,14 +402,15 @@
             "command": "trackhub",
             "category": "Visualization",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "trackhub"
+            "citation": "trackhub",
+            "version": "1.0"
         },
         "tracknado": {
             "display_name": "TrackNado",
             "usage": "Create and host UCSC track hubs",
             "description": "Track hub creation tool for UCSC Genome Browser",
             "command": "tracknado",
-            "version": "≥0.3.1",
+            "version": "\u22650.3.1",
             "category": "Visualization",
             "container": "Environment",
             "citation": "tracknado"
@@ -387,7 +422,8 @@
             "command": "trim_galore",
             "category": "Preprocessing",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "trimgalore"
+            "citation": "trimgalore",
+            "version": "0.6.10"
         },
         "ucsc-tools": {
             "display_name": "UCSC Tools",
@@ -396,7 +432,8 @@
             "command": "bedGraphToBigWig",
             "category": "Utilities",
             "container": "oras://ghcr.io/alsmith151/seqnado_pipeline:latest",
-            "citation": "ucsc-tools"
+            "citation": "ucsc-tools",
+            "version": "482"
         }
     }
 }

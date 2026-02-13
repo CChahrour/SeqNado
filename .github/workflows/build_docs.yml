@@ -54,6 +54,9 @@ jobs:
           sed -i.bak 's/^## `seqnado design`/## `seqnado design` {#cli-seqnado-design}/' docs/cli.md
           sed -i.bak 's/^## `seqnado pipeline`/## `seqnado pipeline` {#cli-seqnado-pipeline}/' docs/cli.md
           rm -f docs/cli.md.bak
+      - name: Generate citation documentation
+        shell: bash -el {0}
+        run: python docs/scripts/generate_tool_citations.py --update
       - name: Build (check only)
         env:
           JUPYTER_PLATFORM_DIRS: "1"

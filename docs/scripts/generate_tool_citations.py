@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -21,6 +22,7 @@ from seqnado.tools import (
     get_available_tools,
     get_categories,
     get_tool_citation,
+    get_tool_info,
     get_tool_version,
     is_apptainer_available,
 )
@@ -83,18 +85,26 @@ def _convert_citation_to_markdown_links(citation_text: str) -> str:
 def _get_tool_version_for_docs(tool_name: str) -> str:
     """Get tool version for documentation.
 
-    Uses container metadata as the primary source for clean version numbers.
-    Falls back to local detection if apptainer is unavailable.
+    Priority order:
+    1. Live detection via containers (when apptainer is available)
+    2. Live detection via local tool execution
+    3. Static version from tools.json
+    4. Fallback string
     """
     if is_apptainer_available():
         version = get_tool_version(tool_name, use_container=True)
         if version and version != "Version information not available":
             return version
-    else:
-        # Fall back to local detection when apptainer unavailable
-        version = get_tool_version(tool_name, use_container=False)
-        if version and version != "Version information not available":
-            return version
+
+    # Try local detection
+    version = get_tool_version(tool_name, use_container=False)
+    if version and version != "Version information not available":
+        return version
+
+    # Fall back to static version from tools.json
+    tool_info = get_tool_info(tool_name)
+    if tool_info and tool_info.get("version"):
+        return tool_info["version"]
 
     return "Latest via container"
 
@@ -181,6 +191,48 @@ def generate_tools_section() -> str:
     return "\n".join(lines)
 
 
+def update_tools_json(dry_run: bool = False) -> bool:
+    """Write discovered versions back to tools.json.
+
+    Run this locally (where apptainer is available) so that CI can read
+    the static versions without needing containers.
+    """
+    json_path = Path(__file__).resolve().parents[2] / "seqnado" / "tools" / "tools.json"
+    if not json_path.exists():
+        print(f"Error: {json_path} does not exist", file=sys.stderr)
+        return False
+
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tools = data.get("tools", data)
+    updated = 0
+
+    for tool_name, tool_info in tools.items():
+        version = _get_tool_version_for_docs(tool_name)
+        if version and version != "Latest via container":
+            old = tool_info.get("version")
+            if old != version:
+                tool_info["version"] = version
+                updated += 1
+                print(f"  {tool_name}: {old!r} -> {version!r}")
+
+    if updated == 0:
+        print("No version changes detected in tools.json")
+        return True
+
+    if dry_run:
+        print(f"\nDry run - {updated} version(s) would be updated in {json_path}")
+        return True
+
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+        f.write("\n")
+
+    print(f"Updated {updated} version(s) in {json_path}")
+    return True
+
+
 def update_tools_md(doc_path: Path, dry_run: bool = False) -> bool:
     """Update the citation.md file with auto-generated tool sections"""
     if not doc_path.exists():
@@ -231,7 +283,12 @@ def main():
         help="Path to the markdown file (default: docs/citation.md)",
     )
     parser.add_argument(
-        "--update", action="store_true", help="Update the file in place"
+        "--update", action="store_true", help="Update citation.md in place"
+    )
+    parser.add_argument(
+        "--update-json",
+        action="store_true",
+        help="Write discovered versions back to tools.json (run locally with containers)",
     )
     parser.add_argument(
         "--dry-run",
@@ -241,11 +298,17 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.update and not args.dry_run:
-        print("Please specify --update or --dry-run")
+    if not args.update and not args.update_json and not args.dry_run:
+        print("Please specify --update, --update-json, or --dry-run")
         return 1
 
-    update_tools_md(args.output, dry_run=args.dry_run)
+    if args.update_json or (args.dry_run and not args.update):
+        print("Updating tool versions in tools.json...")
+        update_tools_json(dry_run=args.dry_run)
+
+    if args.update or args.dry_run:
+        update_tools_md(args.output, dry_run=args.dry_run)
+
     return 0
 
 
