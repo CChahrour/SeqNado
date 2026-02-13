@@ -28,14 +28,14 @@ Run the download command:
 
 ```bash
 seqnado download filereport_read_run_PRJNA1234567.tsv \
-    --outdir geo_downloads \
+    --outdir fastqs \
     --cores 8
 ```
 
 This will:
 - Parse the metadata TSV
 - Download all FASTQ files using prefetch/fasterq-dump
-- Apply retry logic (up to 5 attempts with exponential backoff)
+- Retry failed downloads with scaled resources on each attempt
 - Compress and rename files to: `{GSM}-{sample}_R1.fastq.gz`
 
 ### 3. Generate design file (optional)
@@ -44,7 +44,7 @@ To also generate a SeqNado design file:
 
 ```bash
 seqnado download filereport_read_run_PRJNA1234567.tsv \
-    --outdir geo_downloads \
+    --outdir fastqs \
     --assay rna \
     --design-output metadata_rna.csv \
     --cores 8
@@ -53,7 +53,7 @@ seqnado download filereport_read_run_PRJNA1234567.tsv \
 Or run separately after download:
 
 ```bash
-seqnado design rna --output metadata_rna.csv geo_downloads/*.fastq.gz
+seqnado design rna --output metadata_rna.csv fastqs/*.fastq.gz
 ```
 
 ## Command Reference
@@ -68,7 +68,7 @@ seqnado download [OPTIONS] METADATA_TSV
 
 ### Options
 
-- `-o, --outdir PATH`: Output directory for FASTQ files (default: geo_data)
+- `-o, --outdir PATH`: Output directory for FASTQ files (default: fastqs)
 - `-a, --assay TEXT`: Assay type for design file generation (rna, atac, chip, etc.)
 - `-d, --design-output PATH`: Output path for design CSV
 - `-c, --cores INT`: Number of parallel downloads (default: 4)
@@ -81,14 +81,14 @@ seqnado download [OPTIONS] METADATA_TSV
 ### Download only
 
 ```bash
-seqnado download filereport.tsv --outdir my_project/geo_data -c 10
+seqnado download filereport.tsv --outdir fastqs -c 10
 ```
 
 ### Download + generate RNA-seq design
 
 ```bash
 seqnado download filereport.tsv \
-    --outdir bulk_rnaseq \
+    --outdir fastqs \
     --assay rna \
     -c 8
 ```
@@ -97,7 +97,7 @@ seqnado download filereport.tsv \
 
 ```bash
 seqnado download filereport.tsv \
-    --outdir chip_data \
+    --outdir fastqs \
     --assay chip \
     --design-output metadata_chip.csv
 ```
@@ -140,9 +140,7 @@ This approach ensures proper file structure without creating empty placeholder f
 
 ### Download fails
 
-The download rule includes automatic retry logic:
-- Up to 5 attempts per file
-- Exponential backoff between retries (60s, 120s, 180s, etc.)
+The download rule includes automatic retry logic via Snakemake's resource scaling — memory and time are doubled on each retry attempt. Check logs for details:
 - Full logging in `logs/geo_download/{sample}.log`
 
 ### Missing columns in TSV
