@@ -79,6 +79,7 @@ On successful completion, the build automatically registers the genome in `~/.co
 | `--outdir`, `-o`    | `./genome_build`| Output directory |
 | `--spikein`, `-sp`  | —               | Spike-in genome name for composite builds |
 | `--preset`          | `le`            | Snakemake profile preset (see below) |
+| `--profile`         | —               | Path to a Snakemake profile directory (overrides --preset) |
 | `--cores`, `-c`     | `4`             | Number of Snakemake cores |
 | `--scale-resources` | `1.0`           | Scale memory/time requests |
 | `--dry-run`         | off             | Preview the Snakemake DAG without executing |
@@ -129,12 +130,24 @@ This reads your genome config (`~/.config/seqnado/genome_config.json`), finds ea
  
 By default, the command prompts for a path to contaminant reference files. If provided, it adds common contaminant screens (E. coli, PhiX, rRNA, adapters, etc.).
 
+By default, the command prompts for a path to contaminant reference files. If provided, it adds common contaminant screens (E. coli, PhiX, rRNA, adapters, etc.).
+
 A pre-built set of contaminant references is available here. Download and extract it:
 
 ```bash
 wget https://userweb.molbiol.ox.ac.uk/public/project/milne_group/seqnado/genomes/fastqscreen_reference.tar.gz
 tar -xzf fastqscreen_reference.tar.gz
 ```
+
+Then point the command at the extracted directory:
+
+```bash
+seqnado genomes fastqscreen --contaminant-path ./fastqscreen_reference
+
+Then point the command at the extracted directory:
+
+```bash
+seqnado genomes fastqscreen --contaminant-path ./fastqscreen_reference
 
 Then point the command at the extracted directory:
  
