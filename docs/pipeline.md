@@ -9,7 +9,9 @@ The SeqNado pipeline is built on Snakemake and handles the end-to-end processing
 Run the pipeline for a given assay (e.g., ATAC-seq):
 
 ```bash
-seqnado pipeline atac --preset le
+# To run the pipeline via slurm using singularity containers
+
+seqnado pipeline atac --preset ss
 ```
 
 ### Presets
