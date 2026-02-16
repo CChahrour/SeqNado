@@ -126,15 +126,25 @@ seqnado genomes fastqscreen
 This reads your genome config (`~/.config/seqnado/genome_config.json`), finds each genome's Bowtie2 index, and writes a `fastq_screen.conf` with a `DATABASE` entry per genome. Organism names (Human, Mouse, Drosophila, etc.) are inferred automatically from the genome prefix (e.g. `hg38` → Human, `mm39` → Mouse).
 
 ### Adding contaminant databases
+ 
+By default, the command prompts for a path to contaminant reference files. If provided, it adds common contaminant screens (E. coli, PhiX, rRNA, adapters, etc.).
 
-By default, the command prompts for a path to contaminant reference files. If provided, it adds common contaminant screens (E. coli, PhiX, rRNA, adapters, etc.):
+A pre-built set of contaminant references is available here. Download and extract it:
 
 ```bash
-# Provide path directly
-seqnado genomes fastqscreen --contaminant-path /path/to/contaminant_refs
+wget https://userweb.molbiol.ox.ac.uk/public/project/milne_group/seqnado/genomes/fastqscreen_reference.tar.gz
+tar -xzf fastqscreen_reference.tar.gz
+```
 
-# Skip contaminants entirely
-seqnado genomes fastqscreen --no-contaminants
+Then point the command at the extracted directory:
+ 
+ ```bash
+
+# Provide path directly
+seqnado genomes fastqscreen --contaminant-path ./fastqscreen_reference
+ 
+ # Skip contaminants entirely
+ seqnado genomes fastqscreen --no-contaminants
 ```
 
 The contaminant directory should contain Bowtie2 indices organised in subdirectories:
