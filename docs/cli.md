@@ -204,7 +204,13 @@ $ seqnado pipeline [OPTIONS] [ASSAY]
 * `-v, --verbose`: Increase logging verbosity.
 * `-q, --queue TEXT`: Slurm queue/partition for the `ss` preset.  [default: short]
 * `--print-cmd`: Print the Snakemake command before running it.
+* `-c, --cores INTEGER`: Number of CPU cores for Snakemake to use.  [default: 1]
+* `-n, --dry-run`: Snakemake dry-run: show what would be executed without running.
+* `--unlock`: Unlock the Snakemake working directory (use after a failed/interrupted run).
+* `--rerun-incomplete`: Re-run jobs left incomplete from a previous run.
 * `--help`: Show this message and exit.
+
+Any additional arguments not listed above are passed directly to Snakemake.
 
 ## `seqnado tools` {#cli-seqnado-tools}
 

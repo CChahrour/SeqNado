@@ -2351,6 +2351,18 @@ def pipeline(
     print_cmd: bool = typer.Option(
         False, "--print-cmd", help="Print the Snakemake command before running it."
     ),
+    cores: int = typer.Option(
+        1, "-c", "--cores", help="Number of CPU cores for Snakemake to use."
+    ),
+    dry_run: bool = typer.Option(
+        False, "-n", "--dry-run", help="Snakemake dry-run: show what would be executed without running."
+    ),
+    unlock: bool = typer.Option(
+        False, "--unlock", help="Unlock the Snakemake working directory (use after a failed/interrupted run)."
+    ),
+    rerun_incomplete: bool = typer.Option(
+        False, "--rerun-incomplete", help="Re-run jobs left incomplete from a previous run."
+    ),
 ) -> None:
     """
     Run the data processing pipeline for ASSAY.
@@ -2411,8 +2423,11 @@ def pipeline(
         # Insert at 0 to approximate original position; append could bury it.
         raw_extra_args.insert(0, flag_in_assay)
 
-    # Extract cores and produce cleaned options
-    cleaned_opts, cores = extract_cores_from_options(raw_extra_args)
+    # Extract any residual cores from extra args (edge case: user passes -c in extra args)
+    cleaned_opts, extra_cores = extract_cores_from_options(raw_extra_args)
+
+    # Use the explicit --cores option, but take max with any residual from ctx.args
+    cores = max(cores, extra_cores)
 
     # Sensible default cores logic for multiomics: at least one core per assay unless user requested more.
     if use_multiomics:
@@ -2488,6 +2503,14 @@ def pipeline(
             # Ensure cores is passed
             cmd += ["-c", str(cores)]
 
+            # Inject explicit Snakemake flags from CLI options
+            if dry_run:
+                cmd.append("--dry-run")
+            if unlock:
+                cmd.append("--unlock")
+            if rerun_incomplete:
+                cmd.append("--rerun-incomplete")
+
             # Build workflow_args for nested Snakemake runs (only used in Multiomic mode)
             workflow_args: List[str] = []
             if use_multiomics:
@@ -2505,6 +2528,12 @@ def pipeline(
                         "--show-failed-logs",
                     ]
                 )
+
+                # Add explicit flags to nested workflow args
+                if dry_run:
+                    workflow_args.append("--dry-run")
+                if unlock:
+                    workflow_args.append("--unlock")
 
                 # Add all cleaned options to the nested workflow args so nested snakemake sees them.
                 # They will be joined into a single string and injected via --config workflow_args="..."

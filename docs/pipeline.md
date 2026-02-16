@@ -9,9 +9,9 @@ The SeqNado pipeline is built on Snakemake and handles the end-to-end processing
 Run the pipeline for a given assay (e.g., ATAC-seq):
 
 ```bash
-# To run the pipeline via slurm using singularity containers
+# To run the pipeline via slurm using singularity containers using 16 cores
 
-seqnado pipeline atac --preset ss
+seqnado pipeline atac --cores 16 --preset ss
 ```
 
 ### Presets
@@ -29,7 +29,20 @@ Presets control where and how jobs are executed. Pick the one that matches your 
 !!! tip
     **Not sure which to pick?** Use `le` if you're running on your own machine or a login node. Use `ss` if you're on an HPC cluster with SLURM. See the [HPC Clusters](cluster_config.md) guide for cluster setup.
 
-For all arguments and presets, see the CLI reference: [seqnado pipeline](cli.md#cli-seqnado-pipeline).
+### Common Options
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--cores INTEGER` | `-c` | Number of CPU cores for Snakemake to use (default: 1) |
+| `--dry-run` | `-n` | Show what would be executed without running |
+| `--unlock` | | Unlock the working directory after a failed/interrupted run |
+| `--rerun-incomplete` | | Re-run jobs left incomplete from a previous run |
+| `--scale-resources FLOAT` | `-s` | Scale memory/time requests (default: 1.0) |
+| `--queue TEXT` | `-q` | Slurm queue/partition for the `ss` preset (default: short) |
+
+Any additional arguments are passed directly to Snakemake (e.g., `--printshellcmds`).
+
+For the full CLI reference, see [seqnado pipeline](cli.md#cli-seqnado-pipeline).
 
 ## General Workflow
 

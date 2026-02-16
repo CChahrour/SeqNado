@@ -33,7 +33,6 @@ def extract_cores_from_options(options: List[str]) -> Tuple[List[str], int]:
             ]
         except ValueError:
             cores = 1
-            logger.warning("No core flag provided. Defaulting to 1 core.")
     except IndexError:
         cores = 1
         options = [o for i, o in enumerate(options) if i not in [cores_flag]]
