@@ -6,11 +6,9 @@ The SeqNado pipeline is built on Snakemake and handles the end-to-end processing
 
 ## Usage
 
-Run the pipeline for a given assay (e.g., ATAC-seq):
+Run the pipeline for a given assay (e.g., ATAC-seq) via slurm using singularity containers using 16 cores:
 
 ```bash
-# To run the pipeline via slurm using singularity containers using 16 cores
-
 seqnado pipeline atac --cores 16 --preset ss
 ```
 
