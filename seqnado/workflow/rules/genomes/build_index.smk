@@ -18,6 +18,7 @@ rule samtools_faidx:
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
+    threads: 16
     log:
         OUTPUT_DIR + "/logs/index/{genome}_samtools_faidx.log",
     benchmark:
@@ -26,7 +27,7 @@ rule samtools_faidx:
         "Indexing FASTA with samtools faidx for {wildcards.genome}"
     shell:
         """
-        samtools faidx {input.fasta} 2>&1 | tee {log}
+        samtools faidx -@ {threads} {input.fasta} 2>&1 | tee {log}
         """
 
 
@@ -63,7 +64,7 @@ rule build_star:
     output:
         genome_dir=directory(OUTPUT_DIR + "/{genome}/STAR_2.7.10b"),
     container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
-    threads: 4
+    threads: 16
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=32, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
@@ -157,6 +158,7 @@ if SPIKEIN:
         resources:
             mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
+        threads: 16
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_samtools_faidx.log",
         benchmark:
@@ -165,7 +167,7 @@ if SPIKEIN:
             "Indexing composite FASTA with samtools faidx for {wildcards.primary}_{wildcards.spikein}"
         shell:
             """
-            samtools faidx {input.fasta} 2>&1 | tee {log}
+            samtools faidx -@ {threads} {input.fasta} 2>&1 | tee {log}
             """
 
 
@@ -202,10 +204,10 @@ if SPIKEIN:
         output:
             genome_dir=directory(OUTPUT_DIR + "/{primary}_{spikein}/STAR_2.7.10b"),
         container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
-        threads: 4
         resources:
             mem=lambda wildcards, attempt: define_memory_requested(initial_value=32, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
+        threads: 16
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_star_build.log",
         benchmark:
