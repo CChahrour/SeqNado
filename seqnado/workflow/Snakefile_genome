@@ -14,7 +14,7 @@ from seqnado.utils import remove_unwanted_run_files
 # Hardcoded Config
 ################################
 SCALE_RESOURCES = float(os.environ.get("SCALE_RESOURCES", "1"))
-
+THREADS = int(config.get("threads", 8))  # Default to 8 if not specified
 
 ################################
 # Load Configuration

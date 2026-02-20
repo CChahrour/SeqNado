@@ -206,6 +206,7 @@ def build_genomes(
             config_values = {
                 "genome": ",".join(genomes),
                 "output_dir": str(outdir),
+                "threads": cores,  # Pass cores to rules as thread count
             }
             if spikein:
                 config_values["spikein"] = spikein

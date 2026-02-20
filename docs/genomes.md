@@ -93,7 +93,7 @@ On successful completion, the build automatically registers the genome in `~/.co
 | `--spikein`, `-sp`  | —               | Spike-in genome name for composite builds |
 | `--preset`          | `le`            | Snakemake profile preset (see below) |
 | `--profile`         | —               | Path to a Snakemake profile directory (overrides --preset) |
-| `--cores`, `-c`     | `4`             | Number of Snakemake cores |
+| `--cores`, `-c`     | `4`             | Number of cores available to Snakemake; controls max parallelism and threads per rule |
 | `--scale-resources` | `1.0`           | Scale memory/time requests |
 | `--dry-run`         | off             | Preview the Snakemake DAG without executing |
 | `--verbose`, `-v`   | off             | Print the full Snakemake command |

@@ -3,7 +3,6 @@
 # Builds Bowtie2 and STAR indices for standard and composite genomes
 ################################
 
-
 ################################
 # Standard Genome Index Rules
 ################################
@@ -18,7 +17,7 @@ rule samtools_faidx:
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
-    threads: 16
+    threads: THREADS
     log:
         OUTPUT_DIR + "/logs/index/{genome}_samtools_faidx.log",
     benchmark:
@@ -39,7 +38,7 @@ rule build_bowtie2:
     params:
         prefix=OUTPUT_DIR + "/{genome}/bt2_index/{genome}",
     container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
-    threads: 16
+    threads: THREADS
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=8, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
@@ -64,7 +63,7 @@ rule build_star:
     output:
         genome_dir=directory(OUTPUT_DIR + "/{genome}/STAR_2.7.10b"),
     container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
-    threads: 16
+    threads: THREADS
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(initial_value=32, attempts=attempt, scale=SCALE_RESOURCES),
         runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
@@ -158,7 +157,7 @@ if SPIKEIN:
         resources:
             mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
-        threads: 16
+        threads: THREADS
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_samtools_faidx.log",
         benchmark:
@@ -179,7 +178,7 @@ if SPIKEIN:
         params:
             prefix=OUTPUT_DIR + "/{primary}_{spikein}/bt2_index/{primary}_{spikein}",
         container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
-        threads: 16
+        threads: THREADS
         resources:
             mem=lambda wildcards, attempt: define_memory_requested(initial_value=8, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=8, attempts=attempt, scale=SCALE_RESOURCES),
@@ -207,7 +206,7 @@ if SPIKEIN:
         resources:
             mem=lambda wildcards, attempt: define_memory_requested(initial_value=32, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
-        threads: 16
+        threads: THREADS
         log:
             OUTPUT_DIR + "/logs/composite/{primary}_{spikein}_star_build.log",
         benchmark:
