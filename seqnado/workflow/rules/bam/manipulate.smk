@@ -1,7 +1,7 @@
 from seqnado.workflow.helpers.common import define_time_requested, define_memory_requested
 
 if CONFIG.shift_for_tn5_insertion:
-    rule shift_atac_alignments:
+    rule bam_shift_atac_alignments:
         input:
             bam=OUTPUT_DIR + "/aligned/duplicates_removed/{sample}.bam",
             bai=OUTPUT_DIR + "/aligned/duplicates_removed/{sample}.bam.bai",
@@ -19,7 +19,7 @@ if CONFIG.shift_for_tn5_insertion:
         bamnado modify --input {input.bam} --output {output.tmp} --tn5-shift 2>&1 | tee {log}
         """
 
-    rule sort_and_index_shifted_bam:
+    rule bam_sort_and_index_shifted:
         input:
             tmp=OUTPUT_DIR + "/aligned/shifted_for_tn5_insertion/{sample}.bam.tmp",
         output:
@@ -28,7 +28,7 @@ if CONFIG.shift_for_tn5_insertion:
             read_log=temp(OUTPUT_DIR + "/qc/alignment_post_process/{sample}_atac_shift.tsv"),
         threads: 1
         resources:
-            mem=lambda wildcards, attempt: define_memory_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
+            mem=lambda wildcards, attempt: define_memory_requested(initial_value=8, attempts=attempt, scale=SCALE_RESOURCES),
             runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
         container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
         log: OUTPUT_DIR + "/logs/alignment_post_process/{sample}_atac_shift_sort.log",
@@ -42,7 +42,7 @@ if CONFIG.shift_for_tn5_insertion:
         """
 
 else:
-    rule move_bam_to_temp_location:
+    rule bam_move_to_temp_location:
         input:
             bam=OUTPUT_DIR + "/aligned/duplicates_removed/{sample}.bam",
             bai=OUTPUT_DIR + "/aligned/duplicates_removed/{sample}.bam.bai",

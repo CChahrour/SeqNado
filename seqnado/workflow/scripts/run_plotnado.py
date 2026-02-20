@@ -1,3 +1,5 @@
+import gzip
+import shutil
 import sys
 from pathlib import Path
 
@@ -33,6 +35,34 @@ def snakemake_setup():
         genes,
         template,
     )
+
+
+def prepare_genes_for_plotnado(genes_gz: str, outdir: Path) -> str:
+    """
+    Decompress a bgzipped genes file to outdir for coolbox compatibility.
+
+    coolbox only recognises .bgz as pre-indexed; passing a .bed.gz causes it
+    to double-compress the file and then fail to tabix the result.  Decompressing
+    to a plain BED lets coolbox handle bgzip/tabix itself in a writable location.
+    Any stale .bgz/.bgz.tbi artefacts from prior runs are removed so coolbox
+    can recreate them cleanly.
+    """
+    genes_path = Path(genes_gz)
+    stem = genes_path.name  # e.g. "genes_indexed.bed.gz"
+    if stem.endswith(".gz"):
+        stem = stem[:-3]   # → "genes_indexed.bed"
+    out_path = outdir / stem
+
+    with gzip.open(genes_gz, "rb") as f_in, open(out_path, "wb") as f_out:
+        shutil.copyfileobj(f_in, f_out)
+
+    # Remove stale coolbox artefacts so it can re-index cleanly
+    for suffix in [".bgz", ".bgz.tbi"]:
+        stale = outdir / (out_path.name + suffix)
+        if stale.exists():
+            stale.unlink()
+
+    return str(out_path)
 
 
 def configure_matplotlib():
@@ -221,6 +251,10 @@ def main():
     logger.debug(f"Output plots: {output_plots}")
     logger.debug(f"Plotting regions: {regions}")
     logger.debug(f"Output directory: {outdir}")
+
+    # Decompress pre-indexed genes file so coolbox can handle bgzip/tabix itself
+    if genes and genes.endswith(".gz"):
+        genes = prepare_genes_for_plotnado(genes, Path(outdir))
 
     # Load and process data
     df = load_tracks(input_data, assay)

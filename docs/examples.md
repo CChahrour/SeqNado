@@ -67,17 +67,14 @@ seqnado_output/chip/
 │   └── chip-rx_input.bam.bai
 ├── bigwigs/
 │   ├── bamnado/
-│   │   └── unscaled/
-│   │       ├── chip-rx_MLL.bigWig
-│   │       └── chip-rx_input.bigWig
+│   │   ├── chip-rx_MLL.bigWig
+│   │   └── chip-rx_input.bigWig
 │   ├── deeptools/
-│   │   └── unscaled/
-│   │       ├── chip-rx_MLL.bigWig
-│   │       └── chip-rx_input.bigWig
+│   │   ├── chip-rx_MLL.bigWig
+│   │   └── chip-rx_input.bigWig
 │   └── homer/
-│       └── unscaled/
-│           ├── chip-rx_MLL.bigWig
-│           └── chip-rx_input.bigWig
+│       ├── chip-rx_MLL.bigWig
+│       └── chip-rx_input.bigWig
 ├── peaks/
 │   ├── macs2/
 │   │   └── chip-rx_MLL.bed               # Simplified 3-column BED
@@ -139,14 +136,11 @@ seqnado_output/atac/
 │   └── atac_sample.bam.bai
 ├── bigwigs/
 │   ├── bamnado/
-│   │   └── unscaled/
-│   │       └── atac_sample.bigWig
+│   │   └── atac_sample.bigWig
 │   ├── deeptools/
-│   │   └── unscaled/
-│   │       └── atac_sample.bigWig
+│   │   └── atac_sample.bigWig
 │   └── homer/
-│       └── unscaled/
-│           └── atac_sample.bigWig
+│       └── atac_sample.bigWig
 ├── peaks/
 │   └── lanceotron/                        # Default peak caller for ATAC
 │       └── atac_sample.bed
@@ -259,25 +253,29 @@ BigWig files provide genome-wide signal visualisation.
 
 ### File Naming Convention
 
-BigWig files are organised by tool and scaling method:
+BigWig files are organised by tool, scaling method, and individual vs merged:
 
 ```
-bigwigs/{method}/{scale}/{sample}.bigWig
+Individual samples:
+- bigwigs/deeptools/chip-rx_MLL.bigWig              # Unscaled
+- bigwigs/bamnado/chip-rx_MLL.bigWig
+- bigwigs/homer/chip-rx_MLL.bigWig
+- bigwigs/deeptools/csaw/chip-rx_MLL.bigWig         # CSAW-normalised
+- bigwigs/deeptools/spikein/orlando/chip-rx_MLL.bigWig  # Spike-in normalised
 
-Examples:
-- bigwigs/deeptools/unscaled/chip-rx_MLL.bigWig
-- bigwigs/bamnado/unscaled/chip-rx_MLL.bigWig
-- bigwigs/homer/unscaled/chip-rx_MLL.bigWig
-- bigwigs/deeptools/csaw/chip-rx_MLL.bigWig
-- bigwigs/deeptools/spikein/orlando/chip-rx_MLL.bigWig
-- bigwigs/deeptools/merged/consensus_group.bigWig
+Merged consensus groups:
+- bigwigs/deeptools/merged/consensus_group.bigWig             # Unscaled merged
+- bigwigs/deeptools/merged/csaw/consensus_group.bigWig        # CSAW-scaled merged
+- bigwigs/deeptools/merged/spikein/orlando/consensus_group.bigWig  # Spike-in scaled merged
 ```
+
+See [Pipeline Outputs — Normalisation factor calculation](outputs.md#normalisation-factor-calculation) for a full explanation of how per-sample and merged scale factors are derived.
 
 For RNA-seq, stranded tracks include `_plus` and `_minus` suffixes:
 
 ```
-- bigwigs/deeptools/unscaled/rna_sample_plus.bigWig
-- bigwigs/deeptools/unscaled/rna_sample_minus.bigWig
+- bigwigs/deeptools/rna_sample_plus.bigWig
+- bigwigs/deeptools/rna_sample_minus.bigWig
 ```
 
 ### Loading in UCSC Genome Browser
@@ -337,7 +335,7 @@ wc -l seqnado_output/chip/peaks/macs2/*.bed
 samtools flagstat seqnado_output/chip/aligned/chip-rx_MLL.bam
 
 # Check bigwig file
-bigWigInfo seqnado_output/chip/bigwigs/deeptools/unscaled/chip-rx_MLL.bigWig
+bigWigInfo seqnado_output/chip/bigwigs/deeptools/chip-rx_MLL.bigWig
 ```
 
 ### Finding Specific Results

@@ -138,6 +138,7 @@ class BigWigFiles(BaseModel):
     scale_methods: list[DataScalingTechnique] = [DataScalingTechnique.UNSCALED]
     spikein_methods: list[SpikeInMethod] = Field(default_factory=list)
     output_dir: str = "seqnado_output"
+    is_merged: bool = False
 
     @property
     def prefix(self) -> str:
@@ -149,24 +150,33 @@ class BigWigFiles(BaseModel):
 
     @property
     def incompatible_methods(self) -> dict[PileupMethod, list[DataScalingTechnique]]:
+        if self.is_merged:
+            return {
+                Assay.MCC: [PileupMethod.HOMER, PileupMethod.DEEPTOOLS],
+                PileupMethod.HOMER: [
+                    DataScalingTechnique.CSAW,
+                    DataScalingTechnique.SPIKEIN,
+                ],
+            }
         return {
+            Assay.MCC: [PileupMethod.HOMER, PileupMethod.DEEPTOOLS],
             PileupMethod.HOMER: [
                 DataScalingTechnique.CSAW,
                 DataScalingTechnique.SPIKEIN,
             ],
-            PileupMethod.BAMNADO: [
-                DataScalingTechnique.CSAW,
-                DataScalingTechnique.SPIKEIN,
-            ],
-            PileupMethod.DEEPTOOLS: [Assay.MCC],
         }
 
     def _is_compatible(
         self, method: PileupMethod, scale: DataScalingTechnique, assay: Assay
     ) -> bool:
         if scale in self.incompatible_methods.get(method, []):
+            context = "merged " if self.is_merged else ""
+            logger.warning(
+                f"{method.value} does not support {scale.value} scaling for {context}bigWigs "
+                f"and will be skipped. Use deeptools or bamnado instead."
+            )
             return False
-        if assay in self.incompatible_methods.get(method, []):
+        if method in self.incompatible_methods.get(assay, []):
             return False
         return True
 
@@ -181,7 +191,30 @@ class BigWigFiles(BaseModel):
                 # For spike-in scaling, iterate over all spikein methods
                 if scale == DataScalingTechnique.SPIKEIN and self.spikein_methods:
                     for spikein_method in self.spikein_methods:
-                        scale_path = f"{scale.value}/{spikein_method.value}"
+                        if self.is_merged:
+                            scale_path = f"merged/spikein/{spikein_method.value}"
+                            for name in self.names:
+                                path = f"{self.prefix}{method.value}/{scale_path}/{name}.bigWig"
+                                paths.append(path)
+                        else:
+                            scale_path = f"{scale.value}/{spikein_method.value}"
+                            if self.is_rna:
+                                for name in self.names:
+                                    for strand in ["plus", "minus"]:
+                                        path = f"{self.prefix}{method.value}/{scale_path}/{name}_{strand}.bigWig"
+                                        paths.append(path)
+                            else:
+                                for name in self.names:
+                                    path = f"{self.prefix}{method.value}/{scale_path}/{name}.bigWig"
+                                    paths.append(path)
+                else:
+                    if self.is_merged:
+                        scale_path = f"merged/{scale.value}"
+                        for name in self.names:
+                            path = f"{self.prefix}{method.value}/{scale_path}/{name}.bigWig"
+                            paths.append(path)
+                    else:
+                        scale_path = scale.value
                         if self.is_rna:
                             for name in self.names:
                                 for strand in ["plus", "minus"]:
@@ -191,19 +224,6 @@ class BigWigFiles(BaseModel):
                             for name in self.names:
                                 path = f"{self.prefix}{method.value}/{scale_path}/{name}.bigWig"
                                 paths.append(path)
-                else:
-                    scale_path = scale.value
-                    if self.is_rna:
-                        for name in self.names:
-                            for strand in ["plus", "minus"]:
-                                path = f"{self.prefix}{method.value}/{scale_path}/{name}_{strand}.bigWig"
-                                paths.append(path)
-                    else:
-                        for name in self.names:
-                            path = (
-                                f"{self.prefix}{method.value}/{scale_path}/{name}.bigWig"
-                            )
-                            paths.append(path)
 
         return paths
 
@@ -294,6 +314,13 @@ class MotifFiles(BaseModel):
 
 class HeatmapFiles(BaseModel):
     assay: Assay
+    scale_methods: list[DataScalingTechnique] = Field(
+        default_factory=lambda: [DataScalingTechnique.UNSCALED]
+    )
+    spikein_methods: list[SpikeInMethod] = Field(default_factory=list)
+    output_dir: str = "seqnado_output"
+    is_merged: bool = False
+    method: PileupMethod = PileupMethod.DEEPTOOLS
 
     @field_validator("assay")
     def validate_assay(cls, value):
@@ -301,14 +328,24 @@ class HeatmapFiles(BaseModel):
             raise ValueError(f"Invalid assay for heatmap: {value}")
         return value
 
-    output_dir: str = "seqnado_output"
-
     @property
     def heatmap_files(self) -> list[str]:
-        return [
-            f"{self.output_dir}/heatmap/heatmap.pdf",
-            f"{self.output_dir}/heatmap/metaplot.pdf",
-        ]
+        prefix = "merged/" if self.is_merged else ""
+        files = []
+        for scale in self.scale_methods:
+            if scale == DataScalingTechnique.SPIKEIN and self.spikein_methods:
+                for sm in self.spikein_methods:
+                    scale_path = f"spikein/{sm.value}"
+                    for name in ("heatmap", "metaplot"):
+                        files.append(
+                            f"{self.output_dir}/heatmap/{prefix}{self.method.value}/{scale_path}/{name}.pdf"
+                        )
+            else:
+                for name in ("heatmap", "metaplot"):
+                    files.append(
+                        f"{self.output_dir}/heatmap/{prefix}{self.method.value}/{scale.value}/{name}.pdf"
+                    )
+        return files
 
     @computed_field
     @property
@@ -359,6 +396,10 @@ class PlotFiles(BaseModel):
     coordinates: Path
     file_format: Literal["svg", "png", "pdf"] = "svg"
     output_dir: str = "seqnado_output"
+    scale: str = "unscaled"
+    is_merged: bool = False
+    method: str = "deeptools"
+    spikein_method: str | None = None
 
     @property
     def plot_names(self):
@@ -374,7 +415,12 @@ class PlotFiles(BaseModel):
             )
             coords_df.columns = bed_columns[: len(coords_df.columns)]
 
-            outdir = Path(f"{self.output_dir}/genome_browser_plots/")
+            prefix = "merged/" if self.is_merged else ""
+            if self.scale == "spikein" and self.spikein_method:
+                scale_dir = f"spikein/{self.spikein_method}"
+            else:
+                scale_dir = self.scale
+            outdir = Path(f"{self.output_dir}/genome_browser_plots/{prefix}{self.method}/{scale_dir}/")
             for region in coords_df.itertuples():
                 fig_name = (
                     f"{region.Chromosome}-{region.Start}-{region.End}"
@@ -700,24 +746,38 @@ class GeoSubmissionFiles(BaseModel):
 
     @property
     def processed_data_files(self) -> list[str]:
-        """Return processed files for GEO submission."""
+        """Return processed files for GEO submission.
+
+        For bigWig files, only unscaled individual (non-merged) bigwigs are included.
+        Merged bigwigs and scaled bigwigs (CSAW, spike-in) are excluded.
+        """
         base_dir = Path(f"{self.output_dir}/geo_submission")
         files = []
         for file in self.seqnado_files:
             file_path = Path(file)
             # Check both single suffix and compound suffix (e.g., .vcf.gz)
             ext = "".join(file_path.suffixes)
-            if (
+            if not (
                 ext in self.allowed_extensions
                 or file_path.suffix in self.allowed_extensions
             ):
-                # Need to flatten the file un-nest the directory structure
-                # e.g. seqnado_output/bigwigs/METHOD/SCALE/NAME.bigWig
-                basename = file_path.stem
-                scale_method = file_path.parent.name
-                method = file_path.parent.parent.name
+                continue
 
-                files.append(str(base_dir / f"{basename}_{method}_{scale_method}{ext}"))
+            # For bigWig files, exclude merged and scaled variants
+            if file_path.suffix == ".bigWig":
+                file_str = file_path.as_posix()
+                if "/merged/" in file_str:
+                    continue
+                if "/unscaled/" not in file_str:
+                    continue
+
+            # Need to flatten the file un-nest the directory structure
+            # e.g. seqnado_output/bigwigs/METHOD/SCALE/NAME.bigWig
+            basename = file_path.stem
+            scale_method = file_path.parent.name
+            method = file_path.parent.parent.name
+
+            files.append(str(base_dir / f"{basename}_{method}_{scale_method}{ext}"))
 
         return files
 
@@ -753,6 +813,7 @@ class GEOFiles(BaseModel):
     sample_names: List[str]
     config: Any  # SeqnadoConfig, but use Any to avoid issues
     processed_files: List[str] = Field(default_factory=list)
+    output: Any = None  # SeqnadoOutputFiles, used to select bigwigs via select_bigwig_subtype
 
     class Config:
         arbitrary_types_allowed = True
@@ -849,6 +910,26 @@ class GEOFiles(BaseModel):
         allowed_extensions = [".bigWig", ".bed", ".tsv", ".vcf.gz"]
         processed_data = []
 
+        # Build the set of allowed bigwig paths using select_bigwig_subtype:
+        # only unscaled, non-merged bigwigs for all configured pileup methods.
+        allowed_bigwigs: set[str] = set()
+        if self.output is not None:
+            pileup_methods = (
+                self.output.config.assay_config.bigwigs.pileup_method
+                if self.output.config is not None
+                and self.output.config.assay_config.bigwigs is not None
+                else list(PileupMethod)
+            )
+            for method in pileup_methods:
+                allowed_bigwigs.update(
+                    self.output.select_bigwig_subtype(
+                        method=method,
+                        scale=DataScalingTechnique.UNSCALED,
+                        is_merged=False,
+                        ip_only=False,
+                    )
+                )
+
         for file_path_str in self.processed_files:
             file_path = Path(file_path_str)
 
@@ -860,6 +941,17 @@ class GEOFiles(BaseModel):
                 and file_path.suffix not in allowed_extensions
             ):
                 continue
+
+            # For bigWig files, only include those selected by select_bigwig_subtype
+            if file_path.suffix == ".bigWig":
+                if self.output is not None:
+                    if file_path_str not in allowed_bigwigs:
+                        continue
+                else:
+                    # Fallback when output is not provided
+                    file_str = file_path.as_posix()
+                    if "/merged/" in file_str or "/unscaled/" not in file_str:
+                        continue
 
             # Extract metadata from path structure
             parts = file_path.parts

@@ -1,17 +1,21 @@
 
 
 
-rule lanceotron_no_input_consensus:
+rule call_peaks_lanceotron_no_input_consensus:
     input:
-        bigwig=OUTPUT_DIR + "/bigwigs/deeptools/merged/{group}.bigWig",
+        bigwig=OUTPUT_DIR + "/bigwigs/deeptools/merged/unscaled/{group}.bigWig",
     output:
         peaks=OUTPUT_DIR + "/peaks/lanceotron/merged/{group}.bed",
         ltron_peaks=temp(OUTPUT_DIR + "/peaks/lanceotron/merged/{group}_L-tron.bed"),
     threads:
         CONFIG.third_party_tools.lanceotron.call_peaks.threads
     resources:
-        runtime=lambda wildcards, attempt: define_time_requested(initial_value=4, attempts=attempt, scale=SCALE_RESOURCES),
-        mem=lambda wildcards, attempt: define_memory_requested(initial_value=10, attempts=attempt, scale=SCALE_RESOURCES),
+        mem=lambda wildcards, attempt: define_memory_requested(
+            initial_value=16, attempts=attempt, scale=SCALE_RESOURCES
+        ),
+        runtime=lambda wildcards, attempt: define_time_requested(
+            initial_value=6, attempts=attempt, scale=SCALE_RESOURCES
+        ),
     params:
         outdir=OUTPUT_DIR + "/peaks/lanceotron/merged",
         options=str(CONFIG.third_party_tools.lanceotron.call_peaks.command_line_arguments)
@@ -27,7 +31,7 @@ rule lanceotron_no_input_consensus:
     cat {output.ltron_peaks} | cut -f 1-3 > {output.peaks}
     """
 
-use rule macs2_no_input as macs2_no_input_consensus with:
+use rule call_peaks_macs2_no_input as call_peaks_macs2_no_input_consensus with:
     input:
         treatment = OUTPUT_DIR + "/aligned/merged/{group}.bam",
     output:
@@ -39,7 +43,7 @@ use rule macs2_no_input as macs2_no_input_consensus with:
     message: "Calling peaks with MACS2 for merged group {wildcards.group}"
 
 
-use rule macs3_no_input as macs3_no_input_consensus with:
+use rule call_peaks_macs3_no_input as call_peaks_macs3_no_input_consensus with:
     input:
         treatment = OUTPUT_DIR + "/aligned/merged/{group}.bam",
     output:
@@ -51,9 +55,9 @@ use rule macs3_no_input as macs3_no_input_consensus with:
     message: "Calling peaks with MACS3 for merged group {wildcards.group}"
 
 
-use rule homer_no_input as homer_no_input_consensus with:
+use rule call_peaks_homer_no_input as call_peaks_homer_no_input_consensus with:
     input:
-        treatment = OUTPUT_DIR + "/tag_dirs/merged/{group}",
+        treatment = OUTPUT_DIR + "/tag_dirs/merged/unscaled/{group}",
     output:
         peaks = OUTPUT_DIR + "/peaks/homer/merged/{group}.bed",
     log: OUTPUT_DIR + "/logs/homer/merged/{group}.log",
@@ -63,9 +67,9 @@ use rule homer_no_input as homer_no_input_consensus with:
     message: "Calling peaks with HOMER for merged group {wildcards.group}"
 
 
-rule seacr_consensus:
+rule call_peaks_seacr_consensus:
     input:
-        treatment=OUTPUT_DIR + "/bigwigs/deeptools/merged/{group}.bigWig",
+        treatment=OUTPUT_DIR + "/bigwigs/deeptools/merged/unscaled/{group}.bigWig",
     output:
         peaks=OUTPUT_DIR + "/peaks/seacr/merged/{group}.bed",
         temp_peaks=temp(OUTPUT_DIR + "/peaks/seacr/merged/{group}.stringent.bed"),

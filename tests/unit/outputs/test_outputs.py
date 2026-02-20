@@ -823,7 +823,7 @@ class TestGeoSubmissionFiles:
             assay=Assay.CHIP,
             names=["sample1"],
             seqnado_files=[
-                "seqnado_output/file.bigWig",
+                "seqnado_output/bigwigs/deeptools/unscaled/file.bigWig",
                 "seqnado_output/file.txt",  # Not in allowed extensions
                 "seqnado_output/file.bed",
             ],
@@ -831,7 +831,8 @@ class TestGeoSubmissionFiles:
 
         files = geo.processed_data_files
         assert len(files) == 2  # .txt should be filtered out
-        assert all(f.endswith((".bigWig", ".bed")) for f in files)
+        assert any(f.endswith(".bigWig") for f in files)
+        assert any(f.endswith(".bed") for f in files)
 
     def test_geo_submission_all_files(self):
         """Test files property includes all file types."""
@@ -932,11 +933,11 @@ class TestSeqnadoOutputFilesCore:
         from seqnado.outputs.core import SeqnadoOutputFiles
 
         files = [
-            "output/bigwigs/deeptools/unscaled/atac/sample1.bigWig",
-            "output/bigwigs/deeptools/unscaled/RNA/sample1.bigWig",
-            "output/bigwigs/deeptools/unscaled/chip/sample1.bigWig",
+            "output/bigwigs/deeptools/unscaled/atac_sample1.bigWig",
+            "output/bigwigs/deeptools/unscaled/rna_sample1.bigWig",
+            "output/bigwigs/deeptools/unscaled/chip_sample1.bigWig",
         ]
-        output = SeqnadoOutputFiles(files=files, sample_names=["sample1"])
+        output = SeqnadoOutputFiles(files=files, sample_names=["atac_sample1"])
 
         # Filter for ATAC
         result = output.select_bigwig_subtype(
@@ -954,7 +955,7 @@ class TestSeqnadoOutputFilesCore:
             assay=Assay.RNA,
         )
         assert len(result) == 1
-        assert "RNA" in result[0]
+        assert "rna" in result[0].lower()
 
     def test_bigbed_files_property(self):
         """Test bigbed_files property."""
@@ -1518,15 +1519,15 @@ class TestSeqnadoOutputFilesProperties:
         """Test genome_browser_plots property filters correctly."""
         output = SeqnadoOutputFiles(
             files=[
-                "seqnado_output/genome_browser/plot.pdf",
+                "seqnado_output/genome_browser_plots/deeptools/unscaled/region.pdf",
                 "seqnado_output/peaks/s1.bed",
-                "seqnado_output/plots/genome_browser/p1.pdf",
+                "seqnado_output/genome_browser_plots/homer/unscaled/region.pdf",
             ],
             sample_names=["s1"],
         )
         plots = output.genome_browser_plots
         assert len(plots) == 2
-        assert all(f.endswith(".pdf") and "genome_browser" in f for f in plots)
+        assert all(f.endswith(".pdf") and "genome_browser_plots" in f for f in plots)
 
     def test_ucsc_hub_files_property(self, tmp_path):
         """Test ucsc_hub_files property filters correctly."""

@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -14,9 +13,12 @@ def test_pipeline(
     config_yaml_for_testing: Path,
     design: Path,
     test_profile_path: Path,
+    pytestconfig,
+    seqnado_runner,
 ):
     assay_type = test_context.assay_type(assay)
     cores = test_context.cores
+    preset = pytestconfig.getoption("--preset", default="t")
 
     if assay == 'mcc':
         import pandas as pd
@@ -24,16 +26,16 @@ def test_pipeline(
         df = pd.read_csv(design)
         df['condition'] = df['sample_id'].str.split('-').str[1].str.split('_').str[0]
         df.to_csv(design, index=False)
-    elif assay == 'atac':
+    elif assay in ('atac', 'chip-rx'):
         import pandas as pd
-        # For ATAC-seq, we need to add a 'consensus_group' column to the design file for merged peak calling
+        # For ATAC-seq and ChIP-rx, we need to add a 'consensus_group' column to the design file
+        # for merged peak calling and bigwig normalisation
         df = pd.read_csv(design)
         if 'consensus_group' not in df.columns:
-            # Group all samples together for consensus peak calling
             df['consensus_group'] = 'all'
             df.to_csv(design, index=False)
 
-    res = subprocess.run(
+    res = seqnado_runner(
         [
             "seqnado",
             "pipeline",
@@ -43,13 +45,16 @@ def test_pipeline(
             "--configfile",
             str(config_yaml_for_testing),
             "--preset",
-            "t"
+            preset
         ],
         cwd=config_yaml_for_testing.parent,
         capture_output=False,
         text=True,
     )
 
+
+    print("STDOUT:", res.stdout)
+    print("STDERR:", res.stderr)
     assert res.returncode == 0, (
         f"Pipeline failed with return code {res.returncode}. See output above."
     )
@@ -57,3 +62,5 @@ def test_pipeline(
     assert not (test_dir / "seqnado_error.log").exists()
     assert (test_dir / "seqnado_output").exists()
     assert (test_dir / f"seqnado_output/{assay_type}/seqnado_report.html").exists()
+
+

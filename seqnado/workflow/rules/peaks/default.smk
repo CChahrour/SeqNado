@@ -6,7 +6,7 @@ from seqnado.workflow.helpers.peaks import (
 )
 
 
-rule macs2_with_input:
+rule call_peaks_macs2_with_input:
     input:
         treatment=OUTPUT_DIR + "/aligned/{sample_id}.bam",
         control=lambda wc: get_control_file(wc, file_type=FileType.BAM, INPUT_FILES=INPUT_FILES, OUTPUT_DIR=OUTPUT_DIR),
@@ -50,7 +50,7 @@ rule macs2_with_input:
         """
 
 
-rule macs2_no_input:
+rule call_peaks_macs2_no_input:
     input:
         treatment=OUTPUT_DIR + "/aligned/{sample_id}.bam",
     output:
@@ -93,13 +93,13 @@ rule macs2_no_input:
         """
 
 
-ruleorder: macs2_with_input > macs2_no_input
+ruleorder: call_peaks_macs2_with_input > call_peaks_macs2_no_input
 
 
 # MACS3 rules (same as MACS2 but with macs3 container)
 
 
-rule macs3_with_input:
+rule call_peaks_macs3_with_input:
     input:
         treatment=OUTPUT_DIR + "/aligned/{sample_id}.bam",
         control=lambda wc: get_control_file(wc, file_type=FileType.BAM, INPUT_FILES=INPUT_FILES, OUTPUT_DIR=OUTPUT_DIR),
@@ -143,7 +143,7 @@ rule macs3_with_input:
         """
 
 
-rule macs3_no_input:
+rule call_peaks_macs3_no_input:
     input:
         treatment=OUTPUT_DIR + "/aligned/{sample_id}.bam",
     output:
@@ -186,10 +186,10 @@ rule macs3_no_input:
         """
 
 
-ruleorder: macs3_with_input > macs3_no_input
+ruleorder: call_peaks_macs3_with_input > call_peaks_macs3_no_input
 
 
-rule homer_with_input:
+rule call_peaks_homer_with_input:
     input:
         treatment=OUTPUT_DIR + "/tag_dirs/{sample_id}",
         control=lambda wc: get_control_file(wc, file_type=FileType.TAG_DIRECTORY, INPUT_FILES=INPUT_FILES, OUTPUT_DIR=OUTPUT_DIR),
@@ -223,7 +223,7 @@ rule homer_with_input:
         """
 
 
-rule homer_no_input:
+rule call_peaks_homer_no_input:
     input:
         treatment=OUTPUT_DIR + "/tag_dirs/{sample_id}",
     output:
@@ -256,10 +256,10 @@ rule homer_no_input:
         """
 
 
-ruleorder: homer_with_input > homer_no_input
+ruleorder: call_peaks_homer_with_input > call_peaks_homer_no_input
 
 
-rule lanceotron_with_input:
+rule call_peaks_lanceotron_with_input:
     input:
         treatment=OUTPUT_DIR + "/bigwigs/deeptools/unscaled/{sample_id}.bigWig",
         control=lambda wc: get_control_file(wc, file_type=FileType.BIGWIG, INPUT_FILES=INPUT_FILES, OUTPUT_DIR=OUTPUT_DIR),
@@ -277,10 +277,11 @@ rule lanceotron_with_input:
         basename=lambda wc, output: output.peaks.replace(".bed", ""),
     container:
         "oras://ghcr.io/alsmith151/seqnado_ml_cpu:latest"
-    threads: 1
+    threads: 
+        CONFIG.third_party_tools.lanceotron.call_peaks.threads
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(
-            initial_value=12, attempts=attempt, scale=SCALE_RESOURCES
+            initial_value=16, attempts=attempt, scale=SCALE_RESOURCES
         ),
         runtime=lambda wildcards, attempt: define_time_requested(
             initial_value=6, attempts=attempt, scale=SCALE_RESOURCES
@@ -298,7 +299,7 @@ rule lanceotron_with_input:
         """
 
 
-rule lanceotron_no_input:
+rule call_peaks_lanceotron_no_input:
     input:
         treatment=OUTPUT_DIR + "/bigwigs/deeptools/unscaled/{sample_id}.bigWig",
     output:
@@ -312,12 +313,13 @@ rule lanceotron_no_input:
         ),
         outdir=lambda wc, output: os.path.dirname(output.peaks),
         basename=lambda wc, output: output.peaks.replace(".bed", ""),
-    threads: 1
+    threads: 
+        CONFIG.third_party_tools.lanceotron.call_peaks.threads
     container:
         "oras://ghcr.io/alsmith151/seqnado_ml_cpu:latest"
     resources:
         mem=lambda wildcards, attempt: define_memory_requested(
-            initial_value=12, attempts=attempt, scale=SCALE_RESOURCES
+            initial_value=16, attempts=attempt, scale=SCALE_RESOURCES
         ),
         runtime=lambda wildcards, attempt: define_time_requested(
             initial_value=6, attempts=attempt, scale=SCALE_RESOURCES
@@ -335,10 +337,10 @@ rule lanceotron_no_input:
         """
 
 
-ruleorder: lanceotron_with_input > lanceotron_no_input
+ruleorder: call_peaks_lanceotron_with_input > call_peaks_lanceotron_no_input
 
 
-rule seacr:
+rule call_peaks_seacr:
     input:
         treatment=OUTPUT_DIR + "/bedgraphs/{sample_id}.bedGraph",
     output:

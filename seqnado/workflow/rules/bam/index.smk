@@ -1,17 +1,17 @@
 from seqnado.workflow.helpers.common import define_time_requested, define_memory_requested
 
 
-rule sort_bam:
+rule bam_sort:
     input:
         bam=OUTPUT_DIR + "/aligned/raw/{sample}.bam",
     output:
         bam=temp(OUTPUT_DIR + "/aligned/sorted/{sample}.bam"),
         read_log=temp(OUTPUT_DIR + "/qc/alignment_post_process/{sample}_sort.tsv"),
     resources:
-        mem=lambda wildcards, attempt: define_memory_requested(initial_value=CONFIG.third_party_tools.samtools.sort.threads, attempts=attempt, scale=SCALE_RESOURCES),
-        runtime=lambda wildcards, attempt: define_time_requested(initial_value=2, attempts=attempt, scale=SCALE_RESOURCES),
-    threads: CONFIG.third_party_tools.samtools.sort.threads
+        mem=lambda wildcards, attempt: define_memory_requested(initial_value=16, attempts=attempt, scale=SCALE_RESOURCES),
+        runtime=lambda wildcards, attempt: define_time_requested(initial_value=1, attempts=attempt, scale=SCALE_RESOURCES),
     container: "oras://ghcr.io/alsmith151/seqnado_pipeline:latest"
+    threads: CONFIG.third_party_tools.samtools.sort.threads
     log: OUTPUT_DIR + "/logs/alignment_post_process/{sample}_sort.log",
     benchmark: OUTPUT_DIR + "/.benchmark/alignment_post_process/{sample}_sort.tsv",
     message: "Sorting aligned BAM for sample {wildcards.sample} using samtools",
@@ -22,7 +22,7 @@ rule sort_bam:
         echo -e "sort\t$(samtools view -c {output.bam})" >> {output.read_log} 2>&1 | tee -a {log}
     """
 
-rule sort_bam_by_qname:
+rule bam_sort_by_qname:
     input:
         bam=OUTPUT_DIR + "/aligned/sorted/{sample}.bam",
     output:
@@ -44,7 +44,7 @@ rule sort_bam_by_qname:
     """
 
 
-rule index_bam:
+rule bam_index:
     input:
         bam=OUTPUT_DIR + "/aligned/sorted/{sample}.bam",
     output:
@@ -60,7 +60,7 @@ rule index_bam:
     shell: "samtools index -@ {threads} -b {input.bam}"
 
 
-rule move_bam_to_final_location:
+rule bam_move_to_final_location:
     input:
         bam=OUTPUT_DIR + "/aligned/filtered/{sample}.bam",
         bai=OUTPUT_DIR + "/aligned/filtered/{sample}.bam.bai",
@@ -83,4 +83,4 @@ rule move_bam_to_final_location:
 
 
 localrules:
-    move_bam_to_final_location
+    bam_move_to_final_location
